@@ -201,11 +201,6 @@ void ECTextViewImp :: Show()
         if ( keyLastPressed == CTRL_Q ) {
             Quit();
             break;
-        } else if ( keyLastPressed == ESC ) {
-            listRows.clear();
-            AddRow("William Brodhead");
-        } else if ( keyLastPressed == ARROW_LEFT ) {
-
         }
         
         // notify

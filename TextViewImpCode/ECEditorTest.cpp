@@ -25,8 +25,7 @@ int main(int argc, char *argv[])
     wndTest.SetColor(2, 0, 1, TEXT_COLOR_DEF);
 
     // add a status bar
-    wndTest.AddStatusRow("Editor", "For demo only", true);
-    
+    wndTest.AddStatusRow("Editor", "For demo only", true);    
     wndTest.Show();
     
     return 0;

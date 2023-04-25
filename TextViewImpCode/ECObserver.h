@@ -50,5 +50,4 @@ private:
     std::vector<ECObserver *> listObservers;
 };
 
-
 #endif
