@@ -9,23 +9,23 @@
 // ************************************************************
 // Commands
 
-ECCommand :: ECCommand(ECTextController *ctrl) : ctrl(ctrl) {}
+ECCommand :: ECCommand(ECControl *ctrl) : ctrl(ctrl) {}
 
-ECCommandMode :: ECCommandMode(ECTextController *ctrl) : ECCommand(ctrl) {}
+ECCommandMode :: ECCommandMode(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECCommandMode::Execute()
 {
     ctrl->SetCommandMode();
 }
 
-ECEditMode :: ECEditMode(ECTextController *ctrl) : ECCommand(ctrl) {}
+ECEditMode :: ECEditMode(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECEditMode::Execute()
 {
     ctrl->SetEditMode();
 }
 
-ECCommandRefresh :: ECCommandRefresh(ECTextController *ctrl) : ECCommand(ctrl) {}
+ECCommandRefresh :: ECCommandRefresh(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECCommandRefresh::Execute()
 {
@@ -36,12 +36,12 @@ void ECCommandRefresh::Execute()
 // ************************************************************
 // Commands with history
 
-ECCommandHistory :: ECCommandHistory(ECTextController *ctrl) : ECCommand(ctrl)
+ECCommandHistory :: ECCommandHistory(ECControl *ctrl) : ECCommand(ctrl)
 {
     ctrl->AddCommand(this);
 }
 
-ECCommandRedo :: ECCommandRedo(ECTextController *ctrl) : ECCommandHistory(ctrl) {}
+ECCommandRedo :: ECCommandRedo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
 
 void ECCommandRedo::Execute()
 {
@@ -53,7 +53,7 @@ void ECCommandRedo::UnExecute()
     ctrl->Undo();
 }
 
-ECCommandUndo :: ECCommandUndo(ECTextController *ctrl) : ECCommandHistory(ctrl) {}
+ECCommandUndo :: ECCommandUndo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
 
 void ECCommandUndo::Execute()
 {
@@ -65,7 +65,7 @@ void ECCommandUndo::UnExecute()
     ctrl->Redo();
 }
 
-ECCommandMoveCursor :: ECCommandMoveCursor(ECTextController *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
+ECCommandMoveCursor :: ECCommandMoveCursor(ECControl *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
 
 void ECCommandMoveCursor::Execute()
 {
@@ -77,7 +77,7 @@ void ECCommandMoveCursor::UnExecute()
     ctrl->MoveCursor(-x, -y);
 }
 
-ECCommandEnter :: ECCommandEnter(ECTextController *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
+ECCommandEnter :: ECCommandEnter(ECControl *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
 
 void ECCommandEnter::Execute()
 {
@@ -89,7 +89,7 @@ void ECCommandEnter::UnExecute()
     ctrl->Enter(-x, -y);
 }
 
-ECCommandInsertChar :: ECCommandInsertChar(ECTextController *ctrl, char c, int x, int y) : ECCommandHistory(ctrl) {}
+ECCommandInsertChar :: ECCommandInsertChar(ECControl *ctrl, char c, int x, int y) : ECCommandHistory(ctrl) {}
 
 void ECCommandInsertChar::Execute()
 {
@@ -101,7 +101,7 @@ void ECCommandInsertChar::UnExecute()
     
 }
 
-ECCommandBackspace :: ECCommandBackspace(ECTextController *ctrl, char c) : ECCommandHistory(ctrl) {}
+ECCommandBackspace :: ECCommandBackspace(ECControl *ctrl, char c) : ECCommandHistory(ctrl) {}
 
 void ECCommandBackspace::Execute()
 {

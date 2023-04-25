@@ -4,8 +4,8 @@
 // William Brodhead
 //
 
-#ifndef ECTextController_h
-#define ECTextController_h
+#ifndef ECControl_h
+#define ECControl_h
 
 #include <iostream>
 #include <fstream>
@@ -16,11 +16,11 @@
 using namespace std;
 
 class ECCommand;
-class ECTextController
+class ECControl
 {
 public:
-    virtual ~ECTextController() {}
-    ECTextController(string fileName);
+    virtual ~ECControl() {}
+    ECControl(string fileName);
     void Run();
     void AddCommand(ECCommand *cmd);
     void UpdateView();
@@ -54,14 +54,23 @@ private:
     vector<string> keywords;
 };
 
+class ECModel
+{
+public:
+    ECModel() {}
+    void AddObserver(ECObserver *obs);
+    void RemoveObserver(ECObserver *obs);
+    void NotifyObservers();
+};
+
 class ECMasterObserver : public ECObserver
 {
 public:
-    ECMasterObserver(ECTextController *ctrl) : ctrl(ctrl) {}
+    ECMasterObserver(ECControl *ctrl) : ctrl(ctrl) {}
     void Update();
 
 private:
-    ECTextController *ctrl;
+    ECControl *ctrl;
 };
 
 #endif

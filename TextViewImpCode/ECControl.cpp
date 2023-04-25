@@ -1,33 +1,33 @@
-#include "ECTextController.h"
+#include "ECControl.h"
 
-ECTextController :: ECTextController(string fileName) {}
+ECControl :: ECControl(string fileName) {}
 
-void ECTextController::Run()
+void ECControl::Run()
 {
     
 }
 
-void ECTextController::AddCommand(ECCommand *cmd)
+void ECControl::AddCommand(ECCommand *cmd)
 {
     cmdHistory.push_back(cmd);
 }
 
-void ECTextController::UpdateView()
+void ECControl::UpdateView()
 {
     editor->Show();
 }
 
-void ECTextController::Refresh()
+void ECControl::Refresh()
 {
     editor->Refresh();
 }
 
-int ECTextController::GetKey()
+int ECControl::GetKey()
 {
     return editor->GetPressedKey();
 }
 
-void ECTextController::MoveCursor(int x, int y)
+void ECControl::MoveCursor(int x, int y)
 {
     if (y < 0) y = 0;
     if (x < 0) x = 0;
@@ -41,7 +41,7 @@ void ECTextController::MoveCursor(int x, int y)
     editor->SetCursorY(y);
 }
 
-void ECTextController::Enter(int x, int y)
+void ECControl::Enter(int x, int y)
 {
     string line = text[y].substr(x);
     text[y].erase(x);
@@ -50,7 +50,7 @@ void ECTextController::Enter(int x, int y)
     editor->SetCursorY(y + 1);
 }
 
-void ECTextController::Backspace(int x, int y)
+void ECControl::Backspace(int x, int y)
 {
     if (x > 0)
     {
@@ -67,13 +67,13 @@ void ECTextController::Backspace(int x, int y)
     }
 }
 
-void ECTextController::InsertCharacter(char c, int x, int y)
+void ECControl::InsertCharacter(char c, int x, int y)
 {
     text[y].insert(x, 1, c);
     editor->SetCursorX(x + 1);
 }
 
-void ECTextController::Undo()
+void ECControl::Undo()
 {
     if (currCmd > 0)
     {
@@ -82,7 +82,7 @@ void ECTextController::Undo()
     }
 }
 
-void ECTextController::Redo()
+void ECControl::Redo()
 {
     if (currCmd < cmdHistory.size())
     {

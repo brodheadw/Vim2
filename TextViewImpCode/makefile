@@ -1,7 +1,7 @@
 CXX=g++
 CXXFLAGS=-std=c++11 -Wall -Wextra -Wpedantic -O3 -g
 
-SRC=ECTextViewImp.cpp ECCommand.cpp ECTextController.cpp ECEditorTest.cpp
+SRC=ECTextViewImp.cpp ECCommand.cpp ECControl.cpp ECEditorTest.cpp
 OBJ=$(SRC:.cpp=.o)
 
 TARGET=editor
