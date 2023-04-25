@@ -15,14 +15,14 @@ ECCommandMode :: ECCommandMode(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECCommandMode::Execute()
 {
-    ctrl->SetCommandMode();
+    //ctrl->SetCommandMode();
 }
 
 ECEditMode :: ECEditMode(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECEditMode::Execute()
 {
-    ctrl->SetEditMode();
+    //ctrl->SetEditMode();
 }
 
 ECCommandRefresh :: ECCommandRefresh(ECControl *ctrl) : ECCommand(ctrl) {}
@@ -38,77 +38,66 @@ void ECCommandRefresh::Execute()
 
 ECCommandHistory :: ECCommandHistory(ECControl *ctrl) : ECCommand(ctrl)
 {
-    ctrl->AddCommand(this);
+    //ctrl->AddCommand(this);
 }
 
 ECCommandRedo :: ECCommandRedo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
 
 void ECCommandRedo::Execute()
 {
-    ctrl->Redo();
+    //ctrl->Redo();
 }
 
 void ECCommandRedo::UnExecute()
 {
-    ctrl->Undo();
+    //ctrl->Undo();
 }
 
 ECCommandUndo :: ECCommandUndo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
 
 void ECCommandUndo::Execute()
 {
-    ctrl->Undo();
+    //ctrl->Undo();
 }
 
 void ECCommandUndo::UnExecute()
 {
-    ctrl->Redo();
+    //ctrl->Redo();
 }
 
-ECCommandMoveCursor :: ECCommandMoveCursor(ECControl *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
-
-void ECCommandMoveCursor::Execute()
-{
-    ctrl->MoveCursor(x, y);
-}
-
-void ECCommandMoveCursor::UnExecute()
-{
-    ctrl->MoveCursor(-x, -y);
-}
-
-ECCommandEnter :: ECCommandEnter(ECControl *ctrl, int x, int y) : ECCommandHistory(ctrl) {}
+ECCommandEnter :: ECCommandEnter(ECControl *ctrl) : ECCommandHistory(ctrl) {}
 
 void ECCommandEnter::Execute()
 {
-    ctrl->Enter(x, y);
+    //ctrl->Enter(x, y);
 }
 
 void ECCommandEnter::UnExecute()
 {
-    ctrl->Enter(-x, -y);
+    //ctrl->Enter(-x, -y);
 }
 
-ECCommandInsertChar :: ECCommandInsertChar(ECControl *ctrl, char c, int x, int y) : ECCommandHistory(ctrl) {}
+ECCommandInsert :: ECCommandInsert(ECModel model, int key) 
+    : ECCommandHistory(ctrl), model(model), key(key) {}
 
-void ECCommandInsertChar::Execute()
+void ECCommandInsert::Execute()
 {
-    ctrl->InsertCharacter(c, x, y);
+    model.InsertText();
 }
 
-void ECCommandInsertChar::UnExecute()
-{
-    
-}
-
-ECCommandBackspace :: ECCommandBackspace(ECControl *ctrl, char c) : ECCommandHistory(ctrl) {}
-
-void ECCommandBackspace::Execute()
+void ECCommandInsert::UnExecute()
 {
     
 }
 
-void ECCommandBackspace::UnExecute()
+ECCommandRemove :: ECCommandRemove(ECControl *ctrl) : ECCommandHistory(ctrl) {}
+
+void ECCommandRemove::Execute()
 {
 
+}
+
+void ECCommandRemove::UnExecute()
+{
+    
 }

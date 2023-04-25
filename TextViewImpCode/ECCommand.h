@@ -86,6 +86,7 @@ public:
     ECCommandMoveCursor(ECControl *ctrl, int x, int y);
     virtual void Execute();
     virtual void UnExecute();
+
 private:
     int x, y;
 };
@@ -94,30 +95,28 @@ class ECCommandEnter : public ECCommandHistory
 {
 public:
     virtual ~ECCommandEnter() {}
-    ECCommandEnter(ECControl *ctrl, int x, int y);
+    ECCommandEnter(ECControl *ctrl);
+    virtual void Execute();
+    virtual void UnExecute();
+};
+
+class ECCommandInsert : public ECCommandHistory
+{
+public:
+    virtual ~ECCommandInsert() {}
+    ECCommandInsert(ECModel model, int key);
     virtual void Execute();
     virtual void UnExecute();
 private:
-    int x, y;
+    ECModel model;
+    int key;
 };
 
-class ECCommandInsertChar : public ECCommandHistory
+class ECCommandRemove : public ECCommandHistory
 {
 public:
-    virtual ~ECCommandInsertChar() {}
-    ECCommandInsertChar(ECControl *ctrl, char c, int x, int y);
-    virtual void Execute();
-    virtual void UnExecute();
-private:
-    int x, y;
-    char c;
-};
-
-class ECCommandBackspace : public ECCommandHistory
-{
-public:
-    virtual ~ECCommandBackspace() {}
-    ECCommandBackspace(ECControl *ctrl, char c);
+    virtual ~ECCommandRemove() {}
+    ECCommandRemove(ECControl *ctrl);
     virtual void Execute();
     virtual void UnExecute();
 };

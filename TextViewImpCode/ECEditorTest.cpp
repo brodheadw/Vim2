@@ -1,5 +1,6 @@
 // Test code for editor
 #include "ECTextViewImp.h"
+#include "ECControl.h"
 #include <iostream>
 
 using namespace  std;
@@ -26,7 +27,9 @@ int main(int argc, char *argv[])
 
     // add a status bar
     wndTest.AddStatusRow("Editor", "For demo only", true);    
-    wndTest.Show();
     
+    Observer obs(&wndTest);
+    
+    wndTest.Show();
     return 0;
 }

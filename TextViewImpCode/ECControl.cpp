@@ -1,146 +1,180 @@
+//
+// ECControl.cpp
+//
+// William Brodhead
+//
+
+#include <iostream>
+
 #include "ECControl.h"
 
-ECControl :: ECControl(string fileName) {}
 
-void ECControl::Run()
+// ************************************************************
+// Control
+
+ECControl :: ECControl(ECModel& model) : model(model) {}
+
+void ECControl::MoveCursor(int key)
 {
-    
+    if (key == ARROW_LEFT)
+    {
+        model.ArrowLeft();
+    }
+    else if (key == ARROW_RIGHT)
+    {
+        model.ArrowRight();
+    }
+    else if (key == ARROW_UP)
+    {
+        model.ArrowUp();
+    }
+    else if (key == ARROW_DOWN)
+    {
+        model.ArrowDown();
+    }
 }
 
-void ECControl::AddCommand(ECCommand *cmd)
+void ECControl::InsertText(int key)
 {
-    cmdHistory.push_back(cmd);
+    ECCommand *cmd = new ECCommandInsert(model, key);
+    cmd->Execute();
+    delete cmd;
 }
 
-void ECControl::UpdateView()
+void ECControl::RemoveText()
 {
-    editor->Show();
+    ECCommand *cmd = new ECCommandRemove(this);
+    cmd->Execute();
+    delete cmd;
+}
+
+void ECControl::Enter()
+{
+    ECCommand *cmd = new ECCommandEnter(this);
+    cmd->Execute();
+    delete cmd;
 }
 
 void ECControl::Refresh()
 {
-    editor->Refresh();
+
 }
 
-int ECControl::GetKey()
+
+// ************************************************************
+// Model
+
+ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  : view(view), text(text) {}
+
+void ECModel::ArrowLeft()
 {
-    return editor->GetPressedKey();
-}
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
 
-void ECControl::MoveCursor(int x, int y)
-{
-    if (y < 0) y = 0;
-    if (x < 0) x = 0;
-    if (y >= static_cast<int>(text.size())) y = static_cast<int>(text.size()) - 1;
-    if (y >= 0 && x >= static_cast<int>(text[y].size())) x = static_cast<int>(text[y].size()) - 1;
-
-    xPos = x;
-    yPos = y;
-
-    editor->SetCursorX(x);
-    editor->SetCursorY(y);
-}
-
-void ECControl::Enter(int x, int y)
-{
-    string line = text[y].substr(x);
-    text[y].erase(x);
-    text.insert(text.begin() + y + 1, line);
-    editor->SetCursorX(0);
-    editor->SetCursorY(y + 1);
-}
-
-void ECControl::Backspace(int x, int y)
-{
-    if (x > 0)
+    if (cursorX > 0)
     {
-        text[y].erase(x - 1, 1);
-        editor->SetCursorX(x - 1);
+        view.SetCursorX(cursorX - 1);
     }
-    else if (y > 0)
+    else if (cursorY > 0)
     {
-        int prevLineLength = text[y - 1].size();
-        text[y - 1] += text[y];
-        text.erase(text.begin() + y);
-        editor->SetCursorX(prevLineLength);
-        editor->SetCursorY(y - 1);
+        view.SetCursorY(cursorY - 1);
+        view.SetCursorX(text[cursorY - 1].length());
     }
 }
 
-void ECControl::InsertCharacter(char c, int x, int y)
+void ECModel::ArrowRight()
 {
-    text[y].insert(x, 1, c);
-    editor->SetCursorX(x + 1);
-}
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
 
-void ECControl::Undo()
-{
-    if (currCmd > 0)
+    if (cursorX < text[cursorY].length())
     {
-        cmdHistory[currCmd - 1]->UnExecute();
-        currCmd--;
+        view.SetCursorX(cursorX + 1);
+    }
+    else if (cursorY < text.size() - 1)
+    {
+        view.SetCursorY(cursorY + 1);
+        view.SetCursorX(0);
     }
 }
 
-void ECControl::Redo()
+void ECModel::ArrowUp()
 {
-    if (currCmd < cmdHistory.size())
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    if (cursorY > 0)
     {
-        cmdHistory[currCmd]->Execute();
-        currCmd++;
+        view.SetCursorY(cursorY - 1);
+        if (cursorX > text[cursorY - 1].length())
+        {
+            view.SetCursorX(text[cursorY - 1].length());
+        }
     }
 }
+
+void ECModel::ArrowDown()
+{
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    if (cursorY < text.size() - 1)
+    {
+        view.SetCursorY(cursorY + 1);
+        if (cursorX >= text[cursorY + 1].length())
+        {
+            view.SetCursorX(text[cursorY + 1].length());
+        }
+        else
+        {
+            view.SetCursorX(cursorX);
+        }
+    }
+}
+
+void ECModel::InsertText()
+{
+    int currX = view.GetCursorX();
+    int currY = view.GetCursorY();
+
+
+}
+
+void ECModel::RemoveText()
+{
+
+}
+
+void ECModel::NewLine()
+{
+
+}
+
+
+// ************************************************************
+// Observer
+
+ECMasterObserver :: ECMasterObserver(ECTextViewImp *view, ECModel &model) 
+    : view(view), model(model), ctrl(model), keyLastPressed(keyLastPressed) {}
 
 void ECMasterObserver :: Update()
 {
-    int key = ctrl->GetKey();
-    int xPos = ctrl->GetX();
-    int yPos = ctrl->GetY();
+    int key = view->GetPressedKey();
 
-    ECCommand *cmd = nullptr;
-
-    if (key == CTRL_A || key == ESC)
+    if (key == BACKSPACE)
     {
-        cmd = new ECCommandMode(ctrl);
+        ctrl.RemoveText();
+    }
+    else if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
+    {
+        ctrl.MoveCursor(key);
     }
     else if (key == ENTER)
     {
-        cmd = new ECCommandEnter(ctrl, xPos, yPos);
+        ctrl.Enter();
     }
-    else if (key == CTRL_R)
+    else if (key == ESC)
     {
-        cmd = new ECCommandRefresh(ctrl);
-    }
-    else if (key == CTRL_Y)
-    {
-        cmd = new ECCommandRedo(ctrl);
-    }
-    else if (key == CTRL_Z)
-    {
-        cmd = new ECCommandUndo(ctrl);
-    }
-    else if (key == BACKSPACE)
-    {
-        cmd = new ECCommandBackspace(ctrl, ' ');
-    }
-    else if (key == ARROW_LEFT)
-    {
-        cmd = new ECCommandMoveCursor(ctrl, xPos - 1, yPos);
-    }
-    else if (key == ARROW_RIGHT)
-    {
-        cmd = new ECCommandMoveCursor(ctrl, xPos + 1, yPos);
-    }
-    else if (key == ARROW_UP)
-    {
-        cmd = new ECCommandMoveCursor(ctrl, xPos, yPos - 1);
-    }
-    else if (key == ARROW_DOWN)
-    {
-        cmd = new ECCommandMoveCursor(ctrl, xPos, yPos + 1);
-    }
-    else if (static_cast<char>(key) == 'i' && ctrl->InCommandMode())
-    {
-        cmd = new ECEditMode(ctrl);
+        
     }
 }
