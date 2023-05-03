@@ -27,7 +27,7 @@ void ECCommandInsert::UnExecute()
 
 
 ECCommandRemove :: ECCommandRemove(ECModel &model)
-    : ECCommand(model), model(model) {}
+    : ECCommand(model), model(model), keys(keys) {}
 
 void ECCommandRemove::Execute()
 {
@@ -36,7 +36,7 @@ void ECCommandRemove::Execute()
 
 void ECCommandRemove::UnExecute()
 {
-    model.InsertText('a');
+    
 }
 
 
@@ -50,10 +50,5 @@ void ECCommandEnter::Execute()
 
 void ECCommandEnter::UnExecute()
 {
-    
+    model.RemoveLine();
 }
-
-// ************************************************************
-// Command history
-
-ECCommandHistory::ECCommandHistory() {}

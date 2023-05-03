@@ -40,6 +40,9 @@ public:
     void InsertText(int key);
     void RemoveText();
     void NewLine();
+    void RemoveLine();
+
+    vector<int> removed;
 
 private:
     ECTextViewImp& view;
@@ -63,11 +66,13 @@ public:
     void Undo();
     void Redo();
 
+    void EnterCommandMode();
+    void EnterEditMode();
+
 private:
     ECModel& model;
-    stack<ECCommand*> cmdHistory;
-    stack<ECCommand*> redoStack;
-    int key;
+    vector<ECCommand *> listCmds;
+    int key, currCmd;
 };
 
 

@@ -10,7 +10,7 @@
 // ************************************************************
 // Control
 
-ECControl :: ECControl(ECModel& model) : model(model) {}
+ECControl :: ECControl(ECModel& model) : model(model), currCmd(0) {}
 
 void ECControl::MoveCursor(int key)
 {
@@ -38,7 +38,8 @@ void ECControl::InsertText(int key)
     {
         ECCommand *cmd = new ECCommandInsert(model, key);
         cmd->Execute();
-        cmdHistory.push(cmd);
+        currCmd++;
+        listCmds.push_back(cmd);
     }
 }
 
@@ -46,36 +47,53 @@ void ECControl::RemoveText()
 {
     ECCommand *cmd = new ECCommandRemove(model);
     cmd->Execute(); 
-    cmdHistory.push(cmd);
+    currCmd++;
+    listCmds.push_back(cmd);
 }
 
 void ECControl::Enter()
 {
     ECCommand *cmd = new ECCommandEnter(model);
     cmd->Execute();
-    cmdHistory.push(cmd);
+    currCmd++;
+    listCmds.push_back(cmd);
 }
 
 void ECControl::Undo()
 {
-    if (!cmdHistory.empty())
+    if (currCmd == listCmds.size())
     {
-        ECCommand *cmd = cmdHistory.top();
-        cmd->UnExecute();
-        cmdHistory.pop();
-        redoStack.push(cmd);
+        for (int i=listCmds.size()-1; i>=0; --i)
+        {
+            listCmds[i]->UnExecute();
+        }
     }
+    currCmd = 0;
 }
 
 void ECControl::Redo()
 {
-    if (!redoStack.empty())
+    if (currCmd == 0)
     {
-        ECCommand *cmd = redoStack.top();
-        cmd->Execute();
-        redoStack.pop();
-        cmdHistory.push(cmd);
+        for (int i=0; i<listCmds.size(); ++i)
+        {
+            listCmds[i]->Execute();
+        }
     }
+    currCmd = listCmds.size();
+}
+
+void ECControl::EnterCommandMode()
+{
+    model.SetCommandMode();
+}
+
+void ECControl::EnterEditMode()
+{
+    model.SetEditMode();
+    model.removed.clear();
+    listCmds.clear();
+    currCmd = 0;
 }
 
 
@@ -194,6 +212,9 @@ void ECModel::RemoveText()
 
     if (cursorX > 0) 
     {
+        // Add character to removed list for undo
+        removed.push_back(text[cursorY][cursorX - 1]);
+
         // Remove character before cursor pos
         text[cursorY].erase(cursorX - 1, 1);
         view.SetCursorX(cursorX - 1);
@@ -220,19 +241,46 @@ void ECModel::NewLine()
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    // Append new line if cursor is at end of text
+    // Append new line if cursor at end of text
     if (cursorY >= text.size()) text.push_back("");
 
-    // Split current line at cursor position
+    // Split current line at cursor pos
     std::string newLine = text[cursorY].substr(cursorX);
     text[cursorY].erase(cursorX);
 
-    // Insert new line in between
+    // Insert new line in bw
     text.insert(text.begin() + cursorY + 1, newLine);
 
     // Move cursor to beginning of new line
     view.SetCursorY(cursorY + 1);
     view.SetCursorX(0);
+
+    view.InitRows();
+    for (const auto &row : text) view.AddRow(row);
+    view.Refresh();
+}
+
+void ECModel::RemoveLine()
+{
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    // Do nothing if cursor is at end of text
+    if (cursorY >= text.size()) return;
+
+    // Remove line at cursor pos
+    text.erase(text.begin() + cursorY);
+
+    // Move cursor to beginning of next line
+    if (cursorY < text.size())
+    {
+        view.SetCursorX(0);
+    }
+    else
+    {
+        view.SetCursorY(cursorY - 1);
+        view.SetCursorX(text[cursorY - 1].length());
+    }
 
     view.InitRows();
     for (const auto &row : text) view.AddRow(row);
@@ -252,34 +300,34 @@ void ECMasterObserver :: Update()
 
     if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
     {
-        ctrl.MoveCursor(key);   // Handle cursor movement
+        ctrl.MoveCursor(key);       // Handle cursor movement
     }
     else if (key == ESC)
     {
-        model.SetCommandMode(); // Change to command mode
+        ctrl.EnterCommandMode();    // Change to command mode
     }
     else if (model.GetCurrentMode() != 1 && key == 'i')
     {
-        model.SetEditMode();    // Change to edit mode
+        ctrl.EnterEditMode();       // Change to edit mode
     }
     else if (model.GetCurrentMode() == 0 && key == CTRL_Z)
     {
-        ctrl.Undo();            // Undo
+        ctrl.Undo();                // Undo
     }
     else if (model.GetCurrentMode() == 0 && key == CTRL_Y)
     {
-        ctrl.Redo();
+        ctrl.Redo();                // Redo
     }
     else if (model.GetCurrentMode() == 1 && key == ENTER)
     {
-        ctrl.Enter();           // Enter key
+        ctrl.Enter();               // Enter key
     }
     else if (model.GetCurrentMode() == 1 && key == BACKSPACE)
     {
-        ctrl.RemoveText();      // Backspace key
+        ctrl.RemoveText();          // Backspace key
     }
     else
     {
-        ctrl.InsertText(key);   // Type text (requires edit mode)
+        ctrl.InsertText(key);       // Type text (requires edit mode)
     }
 }

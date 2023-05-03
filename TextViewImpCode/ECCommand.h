@@ -46,6 +46,7 @@ public:
     virtual void UnExecute();
 private:
     ECModel &model;
+    vector<int> keys;
 };
 
 class ECCommandEnter : public ECCommand
@@ -57,21 +58,6 @@ public:
     virtual void UnExecute();
 private:
     ECModel &model;
-};
-
-// Command history class
-
-class ECCommandHistory
-{
-public:
-    ECCommandHistory();
-    virtual ~ECCommandHistory();
-    void Undo();
-    void Redo();
-    
-private:
-    std::vector<ECCommand *> listCmds;
-    int currCmd;
 };
 
 
