@@ -20,6 +20,7 @@ const string DEFAULT = "";
 
 class ECCommand;
 
+
 // ************************************************************
 // ECModel Class
 
@@ -31,22 +32,24 @@ public:
     void SetCommandMode() { mode = 0; };
     void SetEditMode() { mode = 1; };
     int GetCurrentMode() { return mode; };
+    int GetCharAt();
 
     void ArrowUp();
     void ArrowDown();
     void ArrowLeft();
     void ArrowRight();
 
-    void InsertText(int key);
-    void RemoveText();
+    void InsertChar(int key);
+    void RemoveChar();
     void NewLine();
     void RemoveLine();
 
-    vector<int> removed;
+    //void LoadFile(const string& filename);
 
 private:
     ECTextViewImp& view;
     vector<string> text;
+    //const string& filename;
     int key, mode;
 };
 
@@ -59,8 +62,8 @@ class ECControl
 public:
     ECControl(ECModel& model);
     void MoveCursor(int key);
-    void InsertText(int key);
-    void RemoveText();
+    void InsertChar(int key);
+    void RemoveChar();
     void Enter();
     
     void Undo();

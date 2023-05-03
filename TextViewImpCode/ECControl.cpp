@@ -32,7 +32,7 @@ void ECControl::MoveCursor(int key)
     }
 }
 
-void ECControl::InsertText(int key)
+void ECControl::InsertChar(int key)
 {
     if (model.GetCurrentMode() == 1)
     {
@@ -43,7 +43,7 @@ void ECControl::InsertText(int key)
     }
 }
 
-void ECControl::RemoveText()
+void ECControl::RemoveChar()
 {
     ECCommand *cmd = new ECCommandRemove(model);
     cmd->Execute(); 
@@ -91,7 +91,6 @@ void ECControl::EnterCommandMode()
 void ECControl::EnterEditMode()
 {
     model.SetEditMode();
-    model.removed.clear();
     listCmds.clear();
     currCmd = 0;
 }
@@ -103,6 +102,20 @@ void ECControl::EnterEditMode()
 ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  
     : view(view), text(text), key(key), mode(0) {}
 
+int ECModel::GetCharAt()
+{
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    if (cursorY < text.size() && cursorX > 0 && cursorX <= text[cursorY].length())
+    {
+        return text[cursorY][cursorX - 1];
+    }
+    else
+    {
+        return 0;
+    }
+}
 
 // CURSOR MOVEMENT FUNCTIONS
 
@@ -175,7 +188,7 @@ void ECModel::ArrowDown()
 
 // TEXT INSERTION AND DELETION FUNCTIONS
 
-void ECModel::InsertText(int key)
+void ECModel::InsertChar(int key)
 {
     int cursorX = view.GetCursorY();
     int cursorY = view.GetCursorX();
@@ -205,7 +218,7 @@ void ECModel::InsertText(int key)
     view.Refresh();
 }
 
-void ECModel::RemoveText()
+void ECModel::RemoveChar()
 {
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
@@ -213,7 +226,7 @@ void ECModel::RemoveText()
     if (cursorX > 0) 
     {
         // Add character to removed list for undo
-        removed.push_back(text[cursorY][cursorX - 1]);
+        //removed.push_back(text[cursorY][cursorX - 1]);
 
         // Remove character before cursor pos
         text[cursorY].erase(cursorX - 1, 1);
@@ -324,10 +337,10 @@ void ECMasterObserver :: Update()
     }
     else if (model.GetCurrentMode() == 1 && key == BACKSPACE)
     {
-        ctrl.RemoveText();          // Backspace key
+        ctrl.RemoveChar();          // Backspace key
     }
     else
     {
-        ctrl.InsertText(key);       // Type text (requires edit mode)
+        ctrl.InsertChar(key);       // Type text (requires edit mode)
     }
 }

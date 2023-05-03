@@ -17,26 +17,26 @@ ECCommandInsert :: ECCommandInsert(ECModel &model, int key)
 
 void ECCommandInsert::Execute()
 {
-    model.InsertText(key);
+    model.InsertChar(key);
 }
 
 void ECCommandInsert::UnExecute()
 {
-    model.RemoveText();
+    model.RemoveChar();
 }
 
 
 ECCommandRemove :: ECCommandRemove(ECModel &model)
-    : ECCommand(model), model(model), keys(keys) {}
+    : ECCommand(model), model(model), key(model.GetCharAt()) {}
 
 void ECCommandRemove::Execute()
 {
-    model.RemoveText();
+    model.RemoveChar();
 }
 
 void ECCommandRemove::UnExecute()
 {
-    
+    model.InsertChar(key);
 }
 
 

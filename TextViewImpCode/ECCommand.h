@@ -46,7 +46,7 @@ public:
     virtual void UnExecute();
 private:
     ECModel &model;
-    vector<int> keys;
+    int key;
 };
 
 class ECCommandEnter : public ECCommand
