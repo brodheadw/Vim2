@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <stack>
 
 #include "ECTextViewImp.h"
 #include "ECCommand.h"
@@ -17,10 +18,20 @@ using namespace std;
 
 const string DEFAULT = "";
 
+class ECCommand;
+
+// ************************************************************
+// ECModel Class
+
 class ECModel
 {
 public:
     ECModel(ECTextViewImp& view, vector<string> text);
+
+    void SetCommandMode() { mode = 0; };
+    void SetEditMode() { mode = 1; };
+    int GetCurrentMode() { return mode; };
+
     void ArrowUp();
     void ArrowDown();
     void ArrowLeft();
@@ -33,9 +44,12 @@ public:
 private:
     ECTextViewImp& view;
     vector<string> text;
-    int key;
+    int key, mode;
 };
 
+
+// ************************************************************
+// ECControl Class
 
 class ECControl
 {
@@ -44,16 +58,21 @@ public:
     void MoveCursor(int key);
     void InsertText(int key);
     void RemoveText();
-
     void Enter();
     
-    void EnterCommandMode();
+    void Undo();
+    void Redo();
 
 private:
     ECModel& model;
+    stack<ECCommand*> cmdHistory;
+    stack<ECCommand*> redoStack;
     int key;
 };
 
+
+// ************************************************************
+// ECMasterObserver Class
 
 class ECMasterObserver : public ECObserver
 {
@@ -69,21 +88,17 @@ private:
 };
 
 
-class MyObserver : public ECObserver
-{
+// stuff from the first part, just here for reference
+
+class MyObserver : public ECObserver {
 public:
     MyObserver(ECTextViewImp* key) : pressedKey(key) {}
-    void Update()
-    {
+    void Update() {
         int key = pressedKey->GetPressedKey();
-        if (key == ESC)
-        {
+        if (key == ESC) {
             pressedKey->Refresh();
             pressedKey->InitRows();
-            pressedKey->AddRow(myName);
-        }
-    }
-
+            pressedKey->AddRow(myName); } }
 private:
     ECTextViewImp* pressedKey;
     std::string myName = "Will Brodhead";

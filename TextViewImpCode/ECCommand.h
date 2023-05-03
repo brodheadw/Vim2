@@ -9,64 +9,20 @@
 
 #include "ECControl.h"
 
-class ECControl;
 class ECModel;
 
 // ************************************************************
 // Commands
 
-class ECCommand
+class ECCommand // Parent class, design pattern: 
 {
 public:
     virtual ~ECCommand() {}
-    ECCommand(ECControl *ctrl);
+    ECCommand(ECModel &model);
     virtual void Execute() {};
     virtual void UnExecute() {};
-    ECControl *ctrl;
-};
-
-// ************************************************************
-// Command Modes
-
-class ECCommandMode : public ECCommand
-{
-public:
-    virtual ~ECCommandMode() {}
-    ECCommandMode(ECModel &model);
-    virtual void Execute();
 private:
     ECModel &model;
-};
-
-class ECEditMode : public ECCommand
-{
-public:
-    virtual ~ECEditMode() {}
-    ECEditMode(ECModel &model);
-    virtual void Execute();
-private:
-    ECModel &model;
-};
-
-// ************************************************************
-// Basic Commands
-
-class ECCommandRedo : public ECCommand
-{
-public:
-    virtual ~ECCommandRedo() {}
-    ECCommandRedo(ECControl *ctrl);
-    virtual void Execute();
-    virtual void UnExecute();
-};
-
-class ECCommandUndo : public ECCommand
-{
-public:
-    virtual ~ECCommandUndo() {}
-    ECCommandUndo(ECControl *ctrl);
-    virtual void Execute();
-    virtual void UnExecute();
 };
 
 class ECCommandInsert : public ECCommand
@@ -102,5 +58,21 @@ public:
 private:
     ECModel &model;
 };
+
+// Command history class
+
+class ECCommandHistory
+{
+public:
+    ECCommandHistory();
+    virtual ~ECCommandHistory();
+    void Undo();
+    void Redo();
+    
+private:
+    std::vector<ECCommand *> listCmds;
+    int currCmd;
+};
+
 
 #endif

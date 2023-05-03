@@ -34,38 +34,59 @@ void ECControl::MoveCursor(int key)
 
 void ECControl::InsertText(int key)
 {
-    ECCommand *cmd = new ECCommandInsert(model, key);
-    cmd->Execute();
-    delete cmd;
+    if (model.GetCurrentMode() == 1)
+    {
+        ECCommand *cmd = new ECCommandInsert(model, key);
+        cmd->Execute();
+        cmdHistory.push(cmd);
+    }
 }
 
 void ECControl::RemoveText()
 {
     ECCommand *cmd = new ECCommandRemove(model);
-    cmd->Execute();
-    delete cmd;
+    cmd->Execute(); 
+    cmdHistory.push(cmd);
 }
 
 void ECControl::Enter()
 {
     ECCommand *cmd = new ECCommandEnter(model);
     cmd->Execute();
-    delete cmd;
+    cmdHistory.push(cmd);
 }
 
-void ECControl::EnterCommandMode()
+void ECControl::Undo()
 {
-    ECCommand *cmd = new ECCommandMode(model);
-    cmd->Execute();
-    delete cmd;
+    if (!cmdHistory.empty())
+    {
+        ECCommand *cmd = cmdHistory.top();
+        cmd->UnExecute();
+        cmdHistory.pop();
+        redoStack.push(cmd);
+    }
+}
+
+void ECControl::Redo()
+{
+    if (!redoStack.empty())
+    {
+        ECCommand *cmd = redoStack.top();
+        cmd->Execute();
+        redoStack.pop();
+        cmdHistory.push(cmd);
+    }
 }
 
 
 // ************************************************************
-// Model
+// ECModel functions
 
 ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  
-    : view(view), text(text), key(key) {}
+    : view(view), text(text), key(key), mode(0) {}
+
+
+// CURSOR MOVEMENT FUNCTIONS
 
 void ECModel::ArrowLeft()
 {
@@ -133,15 +154,18 @@ void ECModel::ArrowDown()
     }
 }
 
+
+// TEXT INSERTION AND DELETION FUNCTIONS
+
 void ECModel::InsertText(int key)
 {
     int cursorX = view.GetCursorY();
     int cursorY = view.GetCursorX();
 
-    // Add a new row if row doesn't exist
+    // Add new row if row doesn't exist
     if (cursorX >= text.size()) text.resize(cursorX + 1);
 
-    // Insert char at current position
+    // Insert char at current pos
     text[cursorX].insert(cursorY, 1, (char)(key));
     cursorY++;
 
@@ -228,22 +252,34 @@ void ECMasterObserver :: Update()
 
     if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
     {
-        ctrl.MoveCursor(key);
-    }
-    else if (key == ENTER)
-    {
-        ctrl.Enter();
+        ctrl.MoveCursor(key);   // Handle cursor movement
     }
     else if (key == ESC)
     {
-        ctrl.EnterCommandMode();
+        model.SetCommandMode(); // Change to command mode
     }
-    else if (key == BACKSPACE)
+    else if (model.GetCurrentMode() != 1 && key == 'i')
     {
-        ctrl.RemoveText();
+        model.SetEditMode();    // Change to edit mode
+    }
+    else if (model.GetCurrentMode() == 0 && key == CTRL_Z)
+    {
+        ctrl.Undo();            // Undo
+    }
+    else if (model.GetCurrentMode() == 0 && key == CTRL_Y)
+    {
+        ctrl.Redo();
+    }
+    else if (model.GetCurrentMode() == 1 && key == ENTER)
+    {
+        ctrl.Enter();           // Enter key
+    }
+    else if (model.GetCurrentMode() == 1 && key == BACKSPACE)
+    {
+        ctrl.RemoveText();      // Backspace key
     }
     else
     {
-        ctrl.InsertText(key);
+        ctrl.InsertText(key);   // Type text (requires edit mode)
     }
 }
