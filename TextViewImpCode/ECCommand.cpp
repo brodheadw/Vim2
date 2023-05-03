@@ -11,37 +11,21 @@
 
 ECCommand :: ECCommand(ECControl *ctrl) : ctrl(ctrl) {}
 
-ECCommandMode :: ECCommandMode(ECControl *ctrl) : ECCommand(ctrl) {}
+ECCommandMode :: ECCommandMode(ECModel &model) : ECCommand(ctrl), model(model) {}
 
 void ECCommandMode::Execute()
 {
     //ctrl->SetCommandMode();
 }
 
-ECEditMode :: ECEditMode(ECControl *ctrl) : ECCommand(ctrl) {}
+ECEditMode :: ECEditMode(ECModel &model) : ECCommand(ctrl), model(model) {}
 
 void ECEditMode::Execute()
 {
     //ctrl->SetEditMode();
 }
 
-ECCommandRefresh :: ECCommandRefresh(ECControl *ctrl) : ECCommand(ctrl) {}
-
-void ECCommandRefresh::Execute()
-{
-    ctrl->Refresh();
-}
-
-
-// ************************************************************
-// Commands with history
-
-ECCommandHistory :: ECCommandHistory(ECControl *ctrl) : ECCommand(ctrl)
-{
-    //ctrl->AddCommand(this);
-}
-
-ECCommandRedo :: ECCommandRedo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
+ECCommandRedo :: ECCommandRedo(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECCommandRedo::Execute()
 {
@@ -53,7 +37,7 @@ void ECCommandRedo::UnExecute()
     //ctrl->Undo();
 }
 
-ECCommandUndo :: ECCommandUndo(ECControl *ctrl) : ECCommandHistory(ctrl) {}
+ECCommandUndo :: ECCommandUndo(ECControl *ctrl) : ECCommand(ctrl) {}
 
 void ECCommandUndo::Execute()
 {
@@ -65,24 +49,12 @@ void ECCommandUndo::UnExecute()
     //ctrl->Redo();
 }
 
-ECCommandEnter :: ECCommandEnter(ECControl *ctrl) : ECCommandHistory(ctrl) {}
-
-void ECCommandEnter::Execute()
-{
-    //ctrl->Enter(x, y);
-}
-
-void ECCommandEnter::UnExecute()
-{
-    //ctrl->Enter(-x, -y);
-}
-
-ECCommandInsert :: ECCommandInsert(ECModel model, int key) 
-    : ECCommandHistory(ctrl), model(model), key(key) {}
+ECCommandInsert :: ECCommandInsert(ECModel &model, int key) 
+    : ECCommand(ctrl), model(model), key(key) {}
 
 void ECCommandInsert::Execute()
 {
-    model.InsertText();
+    model.InsertText(key);
 }
 
 void ECCommandInsert::UnExecute()
@@ -90,14 +62,28 @@ void ECCommandInsert::UnExecute()
     
 }
 
-ECCommandRemove :: ECCommandRemove(ECControl *ctrl) : ECCommandHistory(ctrl) {}
+ECCommandRemove :: ECCommandRemove(ECModel &model)
+    : ECCommand(ctrl), model(model) {}
 
 void ECCommandRemove::Execute()
 {
-
+    model.RemoveText();
 }
 
 void ECCommandRemove::UnExecute()
 {
     
+}
+
+ECCommandEnter :: ECCommandEnter(ECModel &model) 
+    : ECCommand(ctrl), model(model) {}
+
+void ECCommandEnter::Execute()
+{
+    model.NewLine();
+}
+
+void ECCommandEnter::UnExecute()
+{
+    //ctrl->Enter(-x, -y);
 }

@@ -28,7 +28,11 @@ int main(int argc, char *argv[])
     // add a status bar
     wndTest.AddStatusRow("Editor", "For demo only", true);    
     
-    Observer obs(&wndTest);
+    // MyObserver obs(&wndTest);
+    // wndTest.Attach(&obs);
+    ECModel model(wndTest, {});
+    ECMasterObserver MasterObserver(&wndTest, model);
+    wndTest.Attach(&MasterObserver);
     
     wndTest.Show();
     return 0;

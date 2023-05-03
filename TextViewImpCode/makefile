@@ -6,12 +6,15 @@ OBJ=$(SRC:.cpp=.o)
 
 TARGET=editor
 
-all: $(TARGET)
+.PHONY: all build_and_clean clean
+
+all: build_and_clean
+
+build_and_clean: $(TARGET) clean
 
 $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) -o $(TARGET)
 
+# clean only files with .o extension:
 clean:
-	rm -f $(OBJ) $(TARGET)
-
-.PHONY: all clean
+	rm -f *.o

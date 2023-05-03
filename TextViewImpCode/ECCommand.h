@@ -10,6 +10,7 @@
 #include "ECControl.h"
 
 class ECControl;
+class ECModel;
 
 // ************************************************************
 // Commands
@@ -24,44 +25,33 @@ public:
     ECControl *ctrl;
 };
 
+// ************************************************************
+// Command Modes
+
 class ECCommandMode : public ECCommand
 {
 public:
     virtual ~ECCommandMode() {}
-    ECCommandMode(ECControl *ctrl);
+    ECCommandMode(ECModel &model);
     virtual void Execute();
+private:
+    ECModel &model;
 };
 
 class ECEditMode : public ECCommand
 {
 public:
     virtual ~ECEditMode() {}
-    ECEditMode(ECControl *ctrl);
+    ECEditMode(ECModel &model);
     virtual void Execute();
+private:
+    ECModel &model;
 };
-
-class ECCommandRefresh : public ECCommand
-{
-public:
-    virtual ~ECCommandRefresh() {}
-    ECCommandRefresh(ECControl *ctrl);
-    virtual void Execute();
-};
-
 
 // ************************************************************
-// Commands with history
+// Basic Commands
 
-class ECCommandHistory : public ECCommand
-{
-public:
-    virtual ~ECCommandHistory() {}
-    ECCommandHistory(ECControl *ctrl);
-    virtual void Execute() = 0;
-    virtual void UnExecute() = 0;
-};
-
-class ECCommandRedo : public ECCommandHistory
+class ECCommandRedo : public ECCommand
 {
 public:
     virtual ~ECCommandRedo() {}
@@ -70,7 +60,7 @@ public:
     virtual void UnExecute();
 };
 
-class ECCommandUndo : public ECCommandHistory
+class ECCommandUndo : public ECCommand
 {
 public:
     virtual ~ECCommandUndo() {}
@@ -79,46 +69,38 @@ public:
     virtual void UnExecute();
 };
 
-class ECCommandMoveCursor : public ECCommandHistory
-{
-public:
-    virtual ~ECCommandMoveCursor() {}
-    ECCommandMoveCursor(ECControl *ctrl, int x, int y);
-    virtual void Execute();
-    virtual void UnExecute();
-
-private:
-    int x, y;
-};
-
-class ECCommandEnter : public ECCommandHistory
-{
-public:
-    virtual ~ECCommandEnter() {}
-    ECCommandEnter(ECControl *ctrl);
-    virtual void Execute();
-    virtual void UnExecute();
-};
-
-class ECCommandInsert : public ECCommandHistory
+class ECCommandInsert : public ECCommand
 {
 public:
     virtual ~ECCommandInsert() {}
-    ECCommandInsert(ECModel model, int key);
+    ECCommandInsert(ECModel &model, int key);
     virtual void Execute();
     virtual void UnExecute();
 private:
-    ECModel model;
+    ECModel &model;
     int key;
 };
 
-class ECCommandRemove : public ECCommandHistory
+class ECCommandRemove : public ECCommand
 {
 public:
     virtual ~ECCommandRemove() {}
-    ECCommandRemove(ECControl *ctrl);
+    ECCommandRemove(ECModel &model);
     virtual void Execute();
     virtual void UnExecute();
+private:
+    ECModel &model;
+};
+
+class ECCommandEnter : public ECCommand
+{
+public:
+    virtual ~ECCommandEnter() {}
+    ECCommandEnter(ECModel &model);
+    virtual void Execute();
+    virtual void UnExecute();
+private:
+    ECModel &model;
 };
 
 #endif

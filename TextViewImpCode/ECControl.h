@@ -15,6 +15,8 @@
 
 using namespace std;
 
+const string DEFAULT = "";
+
 class ECModel
 {
 public:
@@ -24,13 +26,14 @@ public:
     void ArrowLeft();
     void ArrowRight();
 
-    void InsertText();
+    void InsertText(int key);
     void RemoveText();
     void NewLine();
-    
+
 private:
     ECTextViewImp& view;
     vector<string> text;
+    int key;
 };
 
 
@@ -41,8 +44,10 @@ public:
     void MoveCursor(int key);
     void InsertText(int key);
     void RemoveText();
+
     void Enter();
-    void Refresh();
+    
+    void EnterCommandMode();
 
 private:
     ECModel& model;
@@ -61,6 +66,27 @@ private:
     ECControl ctrl;
     ECModel &model;
     int keyLastPressed;
+};
+
+
+class MyObserver : public ECObserver
+{
+public:
+    MyObserver(ECTextViewImp* key) : pressedKey(key) {}
+    void Update()
+    {
+        int key = pressedKey->GetPressedKey();
+        if (key == ESC)
+        {
+            pressedKey->Refresh();
+            pressedKey->InitRows();
+            pressedKey->AddRow(myName);
+        }
+    }
+
+private:
+    ECTextViewImp* pressedKey;
+    std::string myName = "Will Brodhead";
 };
 
 #endif

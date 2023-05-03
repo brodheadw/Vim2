@@ -5,9 +5,7 @@
 //
 
 #include <iostream>
-
 #include "ECControl.h"
-
 
 // ************************************************************
 // Control
@@ -43,28 +41,31 @@ void ECControl::InsertText(int key)
 
 void ECControl::RemoveText()
 {
-    ECCommand *cmd = new ECCommandRemove(this);
+    ECCommand *cmd = new ECCommandRemove(model);
     cmd->Execute();
     delete cmd;
 }
 
 void ECControl::Enter()
 {
-    ECCommand *cmd = new ECCommandEnter(this);
+    ECCommand *cmd = new ECCommandEnter(model);
     cmd->Execute();
     delete cmd;
 }
 
-void ECControl::Refresh()
+void ECControl::EnterCommandMode()
 {
-
+    ECCommand *cmd = new ECCommandMode(model);
+    cmd->Execute();
+    delete cmd;
 }
 
 
 // ************************************************************
 // Model
 
-ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  : view(view), text(text) {}
+ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  
+    : view(view), text(text), key(key) {}
 
 void ECModel::ArrowLeft()
 {
@@ -87,7 +88,7 @@ void ECModel::ArrowRight()
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorX < text[cursorY].length())
+    if (cursorY < text.size() && cursorX < text[cursorY].length())
     {
         view.SetCursorX(cursorX + 1);
     }
@@ -121,7 +122,7 @@ void ECModel::ArrowDown()
     if (cursorY < text.size() - 1)
     {
         view.SetCursorY(cursorY + 1);
-        if (cursorX >= text[cursorY + 1].length())
+        if (cursorY + 1 < text.size() && cursorX >= text[cursorY + 1].length())
         {
             view.SetCursorX(text[cursorY + 1].length());
         }
@@ -132,22 +133,86 @@ void ECModel::ArrowDown()
     }
 }
 
-void ECModel::InsertText()
+void ECModel::InsertText(int key)
 {
-    int currX = view.GetCursorX();
-    int currY = view.GetCursorY();
+    int cursorX = view.GetCursorY();
+    int cursorY = view.GetCursorX();
 
+    // Add a new row if row doesn't exist
+    if (cursorX >= text.size()) text.resize(cursorX + 1);
 
+    // Insert char at current position
+    text[cursorX].insert(cursorY, 1, (char)(key));
+    cursorY++;
+
+    if (cursorY >= view.GetColNumInView())
+    {
+        cursorY = 0;
+        cursorX++;
+
+        // If cursor is at end of text add new row
+        if (cursorX >= view.GetRowNumInView()) view.AddRow("");
+    }
+
+    // Update cursor pos
+    view.SetCursorX(cursorY);
+    view.SetCursorY(cursorX);
+
+    view.InitRows();
+    for (const auto &row : text) view.AddRow(row);
+    view.Refresh();
 }
 
 void ECModel::RemoveText()
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
 
+    if (cursorX > 0) 
+    {
+        // Remove character before cursor pos
+        text[cursorY].erase(cursorX - 1, 1);
+        view.SetCursorX(cursorX - 1);
+    } 
+    else if (cursorY > 0) 
+    {
+        // Merge current line w previous line
+        int prevLineLength = text[cursorY - 1].length();
+        text[cursorY - 1] += text[cursorY];
+        text.erase(text.begin() + cursorY);
+        view.SetCursorY(cursorY - 1);
+        view.SetCursorX(prevLineLength);
+    }
+    // Do nothing if cursor is at beginning
+    else if (cursorY == 0 && cursorX == 0) return;
+
+    view.InitRows();
+    for (const auto &row : text) view.AddRow(row);
+    view.Refresh();
 }
 
 void ECModel::NewLine()
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
 
+    // Append new line if cursor is at end of text
+    if (cursorY >= text.size()) text.push_back("");
+
+    // Split current line at cursor position
+    std::string newLine = text[cursorY].substr(cursorX);
+    text[cursorY].erase(cursorX);
+
+    // Insert new line in between
+    text.insert(text.begin() + cursorY + 1, newLine);
+
+    // Move cursor to beginning of new line
+    view.SetCursorY(cursorY + 1);
+    view.SetCursorX(0);
+
+    view.InitRows();
+    for (const auto &row : text) view.AddRow(row);
+    view.Refresh();
 }
 
 
@@ -161,11 +226,7 @@ void ECMasterObserver :: Update()
 {
     int key = view->GetPressedKey();
 
-    if (key == BACKSPACE)
-    {
-        ctrl.RemoveText();
-    }
-    else if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
+    if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
     {
         ctrl.MoveCursor(key);
     }
@@ -175,6 +236,14 @@ void ECMasterObserver :: Update()
     }
     else if (key == ESC)
     {
-        
+        ctrl.EnterCommandMode();
+    }
+    else if (key == BACKSPACE)
+    {
+        ctrl.RemoveText();
+    }
+    else
+    {
+        ctrl.InsertText(key);
     }
 }
