@@ -9,9 +9,9 @@
 
 #include <iostream>
 #include <fstream>
-#include <stack>
 
 #include "ECTextViewImp.h"
+#include "ECModel.h"
 #include "ECCommand.h"
 
 using namespace std;
@@ -19,40 +19,6 @@ using namespace std;
 const string DEFAULT = "";
 
 class ECCommand;
-
-
-// ************************************************************
-// ECModel Class
-
-class ECModel
-{
-public:
-    ECModel(ECTextViewImp& view, vector<string> text);
-
-    void SetCommandMode() { mode = 0; };
-    void SetEditMode() { mode = 1; };
-    int GetCurrentMode() { return mode; };
-    int GetCharAt();
-
-    void ArrowUp();
-    void ArrowDown();
-    void ArrowLeft();
-    void ArrowRight();
-
-    void InsertChar(int key);
-    void RemoveChar();
-    void NewLine();
-    void RemoveLine();
-
-    //void LoadFile(const string& filename);
-
-private:
-    ECTextViewImp& view;
-    vector<string> text;
-    //const string& filename;
-    int key, mode;
-};
-
 
 // ************************************************************
 // ECControl Class
@@ -75,7 +41,7 @@ public:
 private:
     ECModel& model;
     vector<ECCommand *> listCmds;
-    int key, currCmd;
+    int currCmd;
 };
 
 
@@ -92,11 +58,10 @@ private:
     ECTextViewImp *view;
     ECControl ctrl;
     ECModel &model;
-    int keyLastPressed;
 };
 
 
-// stuff from the first part, just here for reference
+// stuff from first part here for reference, feel free to ignore
 
 class MyObserver : public ECObserver {
 public:

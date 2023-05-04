@@ -11,54 +11,53 @@
 
 class ECModel;
 
-// ************************************************************
-// Commands
-
-class ECCommand // Parent class, design pattern: 
+class ECCommand
 {
 public:
-    virtual ~ECCommand() {}
     ECCommand(ECModel &model);
-    virtual void Execute() {};
-    virtual void UnExecute() {};
-private:
-    ECModel &model;
+    virtual ~ECCommand() {}
+
+    virtual void Execute() = 0;
+    virtual void UnExecute() = 0;
+
+protected:
+    ECModel& model;
 };
 
 class ECCommandInsert : public ECCommand
 {
 public:
-    virtual ~ECCommandInsert() {}
     ECCommandInsert(ECModel &model, int key);
-    virtual void Execute();
-    virtual void UnExecute();
+    virtual ~ECCommandInsert() {}
+
+    virtual void Execute() override;
+    virtual void UnExecute() override;
+
 private:
-    ECModel &model;
     int key;
 };
 
 class ECCommandRemove : public ECCommand
 {
 public:
-    virtual ~ECCommandRemove() {}
     ECCommandRemove(ECModel &model);
-    virtual void Execute();
-    virtual void UnExecute();
+    virtual ~ECCommandRemove() {}
+
+    virtual void Execute() override;
+    virtual void UnExecute() override;
+
 private:
-    ECModel &model;
-    int key;
+    int key, cursorX, cursorY;
 };
 
 class ECCommandEnter : public ECCommand
 {
 public:
-    virtual ~ECCommandEnter() {}
     ECCommandEnter(ECModel &model);
-    virtual void Execute();
-    virtual void UnExecute();
-private:
-    ECModel &model;
-};
+    virtual ~ECCommandEnter() {}
 
+    virtual void Execute() override;
+    virtual void UnExecute() override;
+};
 
 #endif

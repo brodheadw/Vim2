@@ -6,14 +6,11 @@
 
 #include "ECCommand.h"
 
-// ************************************************************
-// Commands
-
-ECCommand :: ECCommand(ECModel &model) : model(model) {}
+ECCommand::ECCommand(ECModel &model) : model(model) {}
 
 
-ECCommandInsert :: ECCommandInsert(ECModel &model, int key) 
-    : ECCommand(model), model(model), key(key) {}
+ECCommandInsert::ECCommandInsert(ECModel &model, int key) 
+    : ECCommand(model), key(key) {}
 
 void ECCommandInsert::Execute()
 {
@@ -26,8 +23,18 @@ void ECCommandInsert::UnExecute()
 }
 
 
-ECCommandRemove :: ECCommandRemove(ECModel &model)
-    : ECCommand(model), model(model), key(model.GetCharAt()) {}
+ECCommandRemove::ECCommandRemove(ECModel &model) 
+    : ECCommand(model), cursorX(model.GetCursorX()), cursorY(model.GetCursorY())
+{
+    if (cursorX == 0)
+    {
+        key = '\n'; // account for newline
+    }
+    else
+    {
+        key = model.GetCharAt();
+    }
+}
 
 void ECCommandRemove::Execute()
 {
@@ -36,12 +43,18 @@ void ECCommandRemove::Execute()
 
 void ECCommandRemove::UnExecute()
 {
-    model.InsertChar(key);
+    if (key == '\n')
+    {
+        model.NewLine();
+    }
+    else
+    {
+        model.InsertChar(key);
+    }
 }
 
 
-ECCommandEnter :: ECCommandEnter(ECModel &model) 
-    : ECCommand(model), model(model) {}
+ECCommandEnter::ECCommandEnter(ECModel &model) : ECCommand(model) {}
 
 void ECCommandEnter::Execute()
 {
