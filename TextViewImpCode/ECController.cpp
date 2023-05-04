@@ -1,7 +1,7 @@
 //
+// Created by William Brodhead
+// 
 // ECController.cpp
-//
-// William Brodhead
 //
 
 #include <iostream>
@@ -39,22 +39,6 @@ void ECController::RemoveChar()
 {
     ECCommand *cmd = new ECCommandRemove(model);
     cmd->Execute(); 
-    currCmd++;
-    listCmds.push_back(cmd);
-}
-
-void ECController::UnEnter()
-{
-    ECCommand *cmd = new ECCommandUnEnter(model);
-    cmd->Execute();
-    currCmd++;
-    listCmds.push_back(cmd);
-}
-
-void ECController::Enter()
-{
-    ECCommand *cmd = new ECCommandEnter(model);
-    cmd->Execute();
     currCmd++;
     listCmds.push_back(cmd);
 }
@@ -106,8 +90,9 @@ ECMasterObserver :: ECMasterObserver(ECTextViewImp *view, ECModel &model)
 
 void ECMasterObserver :: Update()
 {
+    model.SetCursorX(view->GetCursorX());
+    model.SetCursorY(view->GetCursorY());
     int key = view->GetPressedKey();
-    int cursorX = view->GetCursorX();
     int mode = model.GetCurrentMode();
 
     if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
@@ -121,9 +106,7 @@ void ECMasterObserver :: Update()
     else if (mode == 0 && key == CTRL_Y)
         ctrl.Redo();                // Redo
     else if (mode == 1 && key == ENTER)
-        ctrl.Enter();               // Enter key
-    //else if (model.GetCurrentMode() == 1 && key == BACKSPACE && cursorX == 0)
-    //    ctrl.UnEnter();          // Backspace key (undo enter)
+        ctrl.InsertChar('\n');      // Enter key
     else if (mode == 1 && key == BACKSPACE)
         ctrl.RemoveChar();          // Backspace key
     else

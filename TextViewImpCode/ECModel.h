@@ -14,6 +14,7 @@
 
 using namespace std;
 
+const string DEFAULT = "";
 
 // ************************************************************
 // ECModel Class
@@ -30,6 +31,8 @@ public:
     int GetCharAt();
     int GetCursorX() { return view.GetCursorX(); };
     int GetCursorY() { return view.GetCursorY(); };
+    void SetCursorX(int x) { cursorX = x; };
+    void SetCursorY(int y) { cursorY = y; };
 
     void ArrowUp();
     void ArrowDown();
@@ -39,8 +42,6 @@ public:
     void InsertChar(int key);
     void RemoveChar();
     void NewLine();
-    void RemoveLine();
-    void WrapText(int wrapWidth);
 
     void LoadFile(const string& filename);
     void SaveFile(const string& filename);
@@ -49,8 +50,7 @@ private:
     ECTextViewImp& view;
     vector<string> text;
     const string& filename;
-    int mode;
-    vector<bool> lineBreaks;
+    int mode, cursorX, cursorY;
 };
 
 #endif /* ECModel_h */

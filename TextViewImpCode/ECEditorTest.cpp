@@ -1,6 +1,6 @@
 // Test code for editor
 #include "ECTextViewImp.h"
-#include "ECControl.h"
+#include "ECController.h"
 #include <iostream>
 
 using namespace  std;

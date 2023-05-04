@@ -1,7 +1,7 @@
 //
-// ECCommand.cpp
-//
 // Created by William Brodhead
+//
+// ECCommand.cpp
 //
 
 #include "ECCommand.h"
@@ -14,7 +14,14 @@ ECCommandInsert::ECCommandInsert(ECModel &model, int key)
 
 void ECCommandInsert::Execute()
 {
-    model.InsertChar(key);
+    if (key == '\n')
+    {
+        model.NewLine();
+    }
+    else
+    {
+        model.InsertChar(key);
+    }
 }
 
 void ECCommandInsert::UnExecute()
@@ -24,10 +31,7 @@ void ECCommandInsert::UnExecute()
 
 
 ECCommandRemove::ECCommandRemove(ECModel &model) 
-    : ECCommand(model), cursorX(model.GetCursorX()), cursorY(model.GetCursorY())
-{
-    key = model.GetCharAt();
-}
+    : ECCommand(model), key(model.GetCharAt()), cursorX(model.GetCursorX()), cursorY(model.GetCursorY()) {}
 
 void ECCommandRemove::Execute()
 {
@@ -36,31 +40,12 @@ void ECCommandRemove::Execute()
 
 void ECCommandRemove::UnExecute()
 {
-    model.InsertChar(key);
-}
-
-
-ECCommandEnter::ECCommandEnter(ECModel &model) : ECCommand(model) {}
-
-void ECCommandEnter::Execute()
-{
-    model.NewLine();
-}
-
-void ECCommandEnter::UnExecute()
-{
-    model.RemoveLine();
-}
-
-
-ECCommandUnEnter::ECCommandUnEnter(ECModel &model) : ECCommand(model) {}
-
-void ECCommandUnEnter::Execute()
-{
-    model.RemoveLine();
-}
-
-void ECCommandUnEnter::UnExecute()
-{
-    model.NewLine();
+    if (cursorX == 0)
+    {
+        model.NewLine();
+    }
+    else
+    {
+        model.InsertChar(key);
+    }
 }

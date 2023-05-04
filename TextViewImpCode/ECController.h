@@ -1,7 +1,7 @@
 //
-// ECTextController.h
+// Created by William Brodhead
 //
-// William Brodhead
+// ECTextController.h
 //
 
 #ifndef ECController_h
@@ -16,8 +16,6 @@
 
 using namespace std;
 
-const string DEFAULT = "";
-
 class ECCommand;
 
 // ************************************************************
@@ -30,8 +28,6 @@ public:
     void MoveCursor(int key);
     void InsertChar(int key);
     void RemoveChar();
-    void UnEnter();
-    void Enter();
     
     void Undo();
     void Redo();
