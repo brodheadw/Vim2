@@ -10,7 +10,7 @@
 // ************************************************************
 // Control
 
-ECController :: ECController(ECModel& model) : model(model) {}
+ECController :: ECController(ECModel& model) : model(model), currCmd(0) {}
 
 void ECController::MoveCursor(int key)
 {
@@ -29,26 +29,25 @@ void ECController::InsertChar(int key)
     if (model.GetCurrentMode() == 1) // confirm in edit mode
     {
         ECCommand *cmd = new ECCommandInsert(model, key);
+        listCmds.push_back(cmd);
         cmd->Execute();
         currCmd++;
-        listCmds.push_back(cmd);
     }
 }
 
 void ECController::RemoveChar()
 {
     ECCommand *cmd = new ECCommandRemove(model);
+    listCmds.push_back(cmd);
     cmd->Execute(); 
     currCmd++;
-    listCmds.push_back(cmd);
 }
 
 void ECController::Undo()
 {
-    int size = listCmds.size();
-    if (currCmd == size)
+    if (currCmd == listCmds.size())
     {
-        for (int i = size - 1; i >= 0; --i)
+        for (int i = listCmds.size() - 1; i >= 0; i--)
         {
             listCmds[i]->UnExecute();
         }
@@ -58,15 +57,14 @@ void ECController::Undo()
 
 void ECController::Redo()
 {
-    int size = listCmds.size();
     if (currCmd == 0)
     {
-        for (int i = 0; i < size; ++i)
+        for (int i = 0; i < listCmds.size(); i++)
         {
             listCmds[i]->Execute();
         }
     }
-    currCmd = size;
+    currCmd = listCmds.size();
 }
 
 void ECController::EnterCommandMode()
@@ -90,8 +88,8 @@ ECMasterObserver :: ECMasterObserver(ECTextViewImp *view, ECModel &model)
 
 void ECMasterObserver :: Update()
 {
-    model.SetCursorX(view->GetCursorX());
-    model.SetCursorY(view->GetCursorY());
+    //model.SetCursorX(view->GetCursorX());
+    //model.SetCursorY(view->GetCursorY());
     int key = view->GetPressedKey();
     int mode = model.GetCurrentMode();
 

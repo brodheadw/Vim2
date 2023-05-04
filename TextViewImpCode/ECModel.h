@@ -31,8 +31,10 @@ public:
     int GetCharAt();
     int GetCursorX() { return view.GetCursorX(); };
     int GetCursorY() { return view.GetCursorY(); };
-    void SetCursorX(int x) { cursorX = x; };
-    void SetCursorY(int y) { cursorY = y; };
+    //void SetCursorX(int x) { cursorX = x; };
+    //void SetCursorY(int y) { cursorY = y; };
+    void SetCursorX(int x) { view.SetCursorX(x); };
+    void SetCursorY(int y) { view.SetCursorY(y); };
 
     void ArrowUp();
     void ArrowDown();
@@ -42,6 +44,8 @@ public:
     void InsertChar(int key);
     void RemoveChar();
     void NewLine();
+    void RemoveChar2();
+    int mod (int a, int b) { return (a % b + b) % b; };
 
     void LoadFile(const string& filename);
     void SaveFile(const string& filename);

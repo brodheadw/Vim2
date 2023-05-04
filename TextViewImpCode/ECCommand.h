@@ -39,7 +39,7 @@ public:
     virtual void UnExecute() override;
 
 private:
-    int key;
+    int key, cursorX, cursorY;
 };
 
 

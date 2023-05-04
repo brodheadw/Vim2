@@ -29,6 +29,9 @@ int ECModel::GetCharAt()
 
 void ECModel::ArrowLeft()   // LEFT
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
     if (cursorX > 0)
     {
         view.SetCursorX(cursorX - 1);
@@ -42,24 +45,25 @@ void ECModel::ArrowLeft()   // LEFT
 
 void ECModel::ArrowRight()  // RIGHT
 {
-    if (cursorY < text.size())
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    if (cursorX < text[cursorY].length())
     {
         view.SetCursorX(cursorX + 1);
-
-        if (cursorX < text[cursorY].length())
-        {
-            view.SetCursorX(cursorX + 1);
-        }
-        else if (cursorY < text.size() - 1)
-        {
-            view.SetCursorY(cursorY + 1);
-            view.SetCursorX(0);
-        }
+    }
+    else if (cursorY < text.size() - 1)
+    {
+        view.SetCursorY(cursorY + 1);
+        view.SetCursorX(0);
     }
 }
 
 void ECModel::ArrowUp()     // UP
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
     if (cursorY > 0)
     {
         view.SetCursorY(cursorY - 1);
@@ -72,6 +76,9 @@ void ECModel::ArrowUp()     // UP
 
 void ECModel::ArrowDown()   // DOWN
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
     if (cursorY < text.size() - 1)
     {
         view.SetCursorY(cursorY + 1);
@@ -91,57 +98,91 @@ void ECModel::ArrowDown()   // DOWN
 
 void ECModel::InsertChar(int key)
 {
-    // Get max cursor pos
-    if (cursorX >= text.size()) text.resize(cursorX + 1);
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+    int maxCols = view.GetColNumInView() - 1;
+    // Resize text if row doesn't exist
+    if (cursorY >= text.size()) text.resize(cursorY + 1);
+    // Get current line
+    string& currentLine = text[cursorY];
+    // Insert character at cursor pos
+    currentLine.insert(cursorX, 1, (char)(key));
 
-    // Insert char at current pos
-    text[cursorX].insert(cursorY, 1, (char)(key));
-    cursorY++;
+    if (currentLine.length() > maxCols)
+    {// Move the exceeding part of current line to next line
+        string wrappedChar = currentLine.substr(maxCols);
+        currentLine.erase(maxCols);
 
-    if (cursorY >= view.GetColNumInView())
-    {
-        cursorY = 0;
-        cursorX++;
+        // Check if there is a next line
+        if (cursorY + 1 < text.size())
+        {// Insert wrappedChar at the beginning of next line
+            text[cursorY + 1] = wrappedChar + text[cursorY + 1];
+        }
+        else
+        {// If no line below current, create newline w wrappedChar
+            text.push_back(wrappedChar);
+        }
 
-        // If cursor is at end of text add new row
-        if (cursorX >= view.GetRowNumInView()) view.AddRow("");
+        if (cursorX == maxCols)
+        {// Move cursor to next line if at EOL
+            view.SetCursorX(0);
+            view.SetCursorY(cursorY + 1);
+        }
+        else
+        {// Move cursor right
+            view.SetCursorX(cursorX + 1);
+        }
     }
-
-    // Update cursor pos
-    view.SetCursorX(cursorY);
-    view.SetCursorY(cursorX);
-
+    else
+    {// Move cursor to the right
+        view.SetCursorX(cursorX + 1);
+    }
     UpdateView();
 }
 
 void ECModel::RemoveChar()
 {
-    if (cursorX > 0) 
-    {
-        // Add character to removed list for undo
-        //removed.push_back(text[cursorY][cursorX - 1]);
-        //removed.push_back(text[cursorY][cursorX - 1]);
-        // Remove character before cursor pos
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+    int maxCols = view.GetColNumInView() - 1;
+
+    if (cursorX > 0)
+    {// Remove character from the current row
         text[cursorY].erase(cursorX - 1, 1);
         view.SetCursorX(cursorX - 1);
-    } 
-    else if (cursorY > 0) 
-    {
-        // Merge current line w previous line
-        int prevLineLength = text[cursorY - 1].length();
-        text[cursorY - 1] += text[cursorY];
-        text.erase(text.begin() + cursorY);
-        view.SetCursorY(cursorY - 1);
-        view.SetCursorX(prevLineLength);
     }
-    // Do nothing if cursor is at beginning
-    else if (cursorY == 0 && cursorX == 0) return;
+    else if (cursorY > 0)
+    {// Move the first character of the current line to the previous line if it's shorter than maxCols
+        if (text[cursorY - 1].length() < maxCols && text[cursorY].length() > 0)
+        {
+            string wrappedChar = text[cursorY].substr(0, 1);
+            text[cursorY].erase(0, 1);
+            text[cursorY - 1].append(wrappedChar);
+            view.SetCursorX(text[cursorY - 1].length() - 1 - 1); // Subtract 1 from the new cursorX value
+        }
+        else
+        {// Merge current row with previous row
+            int prevRowLen = text[cursorY - 1].length();
+            text[cursorY - 1].append(text[cursorY]);
+            text.erase(text.begin() + cursorY);
+            view.SetCursorX(prevRowLen);
 
+            if (text[cursorY - 1].back() == '\n')
+            {
+                text[cursorY - 1].pop_back();
+                view.SetCursorX(prevRowLen - 1);
+            }
+        }
+        view.SetCursorY(cursorY - 1);
+    }
     UpdateView();
 }
 
 void ECModel::NewLine()
 {
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
     // Append new line if cursor at end of text
     if (cursorY >= text.size()) text.push_back("");
 
@@ -163,6 +204,33 @@ void ECModel::UpdateView()
     view.InitRows();
     for (const auto &row : text) view.AddRow(row);
     view.Refresh();
+}
+
+void ECModel::RemoveChar2()
+{
+    int cursorY = view.GetCursorY();
+    int cursorX = view.GetCursorX();
+    int lastRow = view.GetRowNumInView() - 1;
+    int lastCol = view.GetColNumInView() - 1;
+   
+    string currentRow = text[cursorY];
+    if (!currentRow.empty() && cursorX - 1 < currentRow.length()) 
+    {
+        currentRow.erase(cursorX - 1, 1);
+        text[cursorY] = currentRow;
+    }
+
+    view.SetCursorX(mod((view.GetCursorX() - 1), view.GetColNumInView()));
+    if (view.GetCursorX() == view.GetColNumInView() - 1)
+    {
+        if (view.GetCursorY() > 0)
+        {
+            view.SetCursorY((view.GetCursorY() - 1));
+        }
+        int lastValidCol = text[view.GetCursorY()].length();
+        view.SetCursorX(lastValidCol);
+    }
+    UpdateView();
 }
 
 
