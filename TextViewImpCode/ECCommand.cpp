@@ -26,14 +26,7 @@ void ECCommandInsert::UnExecute()
 ECCommandRemove::ECCommandRemove(ECModel &model) 
     : ECCommand(model), cursorX(model.GetCursorX()), cursorY(model.GetCursorY())
 {
-    if (cursorX == 0)
-    {
-        key = '\n'; // account for newline
-    }
-    else
-    {
-        key = model.GetCharAt();
-    }
+    key = model.GetCharAt();
 }
 
 void ECCommandRemove::Execute()
@@ -43,14 +36,7 @@ void ECCommandRemove::Execute()
 
 void ECCommandRemove::UnExecute()
 {
-    if (key == '\n')
-    {
-        model.NewLine();
-    }
-    else
-    {
-        model.InsertChar(key);
-    }
+    model.InsertChar(key);
 }
 
 
@@ -64,4 +50,17 @@ void ECCommandEnter::Execute()
 void ECCommandEnter::UnExecute()
 {
     model.RemoveLine();
+}
+
+
+ECCommandUnEnter::ECCommandUnEnter(ECModel &model) : ECCommand(model) {}
+
+void ECCommandUnEnter::Execute()
+{
+    model.RemoveLine();
+}
+
+void ECCommandUnEnter::UnExecute()
+{
+    model.NewLine();
 }

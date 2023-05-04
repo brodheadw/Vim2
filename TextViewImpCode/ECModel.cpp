@@ -17,7 +17,7 @@ int ECModel::GetCharAt()
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorY < int(text.size()) && cursorX > 0 && cursorX <= int(text[cursorY].length())) 
+    if (cursorY < text.size() && cursorX > 0 && cursorX <= int(text[cursorY].length())) 
     {
         return text[cursorY][cursorX - 1];
     } 
@@ -62,11 +62,11 @@ void ECModel::ArrowRight()  // RIGHT
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorY < int(text.size()) && cursorX < int(text[cursorY].length()))
+    if (cursorY < text.size() && cursorX < text[cursorY].length())
     {
         view.SetCursorX(cursorX + 1);
     }
-    else if (cursorY < int(text.size()) - 1)
+    else if (cursorY < text.size() - 1)
     {
         if (!lineBreaks[cursorY])
         {
@@ -84,7 +84,7 @@ void ECModel::ArrowUp()     // UP
     if (cursorY > 0)
     {
         view.SetCursorY(cursorY - 1);
-        if (cursorX > int(text[cursorY - 1].length()))
+        if (cursorX > text[cursorY - 1].length())
         {
             view.SetCursorX(text[cursorY - 1].length());
         }
@@ -96,10 +96,10 @@ void ECModel::ArrowDown()   // DOWN
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorY < int(text.size()) - 1)
+    if (cursorY < text.size() - 1)
     {
         view.SetCursorY(cursorY + 1);
-        if (cursorY + 1 < int(text.size()) && cursorX >= int(text[cursorY + 1].length()))
+        if (cursorY + 1 < text.size() && cursorX >= text[cursorY + 1].length())
         {
             view.SetCursorX(text[cursorY + 1].length());
         }
@@ -119,19 +119,11 @@ void ECModel::InsertChar(int key)
     int cursorY = view.GetCursorY();
 
     // Add new row if row doesn't exist
-    if (cursorY >= int(text.size())) text.resize(cursorY + 1);
+    if (cursorY >= text.size()) text.resize(cursorY + 1);
 
     // Insert char at current pos
     text[cursorY].insert(cursorX, 1, (char)(key));
     cursorX++;
-
-    if (cursorX >= view.GetColNumInView())
-    {
-        cursorX = 0;
-        cursorY++;
-        // If cursor at end, add new row
-        if (cursorY >= view.GetRowNumInView()) view.AddRow("");
-    }
 
     // Update cursor pos
     view.SetCursorX(cursorX);
@@ -152,6 +144,22 @@ void ECModel::RemoveChar()
     else if (cursorY > 0) 
     {   // Merge current line w previous line
         int prevLineLength = text[cursorY - 1].length();
+
+        // Check if current line is wrapped or a new line
+        if (!lineBreaks[cursorY])
+        {
+            text[cursorY - 1] += text[cursorY];
+            text.erase(text.begin() + cursorY);
+            view.SetCursorX(prevLineLength);
+            view.SetCursorY(cursorY - 1);
+        }
+        else
+        {
+            text[cursorY - 1] += text[cursorY];
+            text.erase(text.begin() + cursorY);
+            view.SetCursorX(prevLineLength);
+            view.SetCursorY(cursorY - 1);
+        }
         text[cursorY - 1] += text[cursorY];
         text.erase(text.begin() + cursorY);
         view.SetCursorX(prevLineLength);
@@ -168,7 +176,7 @@ void ECModel::NewLine()
     int cursorY = view.GetCursorY();
 
     // Append new line if cursor at end of text
-    if (cursorY >= int(text.size())) text.push_back("");
+    if (cursorY >= text.size()) text.push_back("");
 
     // Split current line at cursor pos
     string newLine = text[cursorY].substr(cursorX);
@@ -188,15 +196,16 @@ void ECModel::RemoveLine()
     int cursorY = view.GetCursorY();
 
     // Do nothing if cursor is at end of text
-    if (cursorY >= int(text.size())) return;
+    if (cursorY >= text.size()) return;
 
     // Remove line at cursor pos
     text.erase(text.begin() + cursorY);
 
     // Move cursor to beginning of next line
-    if (cursorY < int(text.size()))
+    if (cursorY < text.size())
     {
         view.SetCursorX(0);
+        view.SetCursorY(cursorY - 1);
     }
     else
     {
@@ -208,7 +217,7 @@ void ECModel::RemoveLine()
 
 void ECModel::UpdateView()
 {
-    WrapText(view.GetColNumInView() - 2);
+    WrapText(view.GetColNumInView() - 1);
 
     view.InitRows();
     for (const auto &row : text) view.AddRow(row);
@@ -223,11 +232,36 @@ void ECModel::WrapText(int wrapWidth)
     for (const auto &row : text)
     {
         std::string line = row;
-        while (wrapWidth < int(line.length()))
+        size_t lastSpace = std::string::npos;
+        size_t currentPos = 0;
+
+        while (currentPos < line.length())
         {
-            wrappedText.push_back(line.substr(0, wrapWidth));
-            line = line.substr(wrapWidth);
-            lineBreaks.push_back(false);
+            if (line[currentPos] == ' ')
+            {
+                lastSpace = currentPos;
+            }
+
+            if (currentPos > 0 && currentPos % wrapWidth == 0)
+            {
+                if (lastSpace != std::string::npos)
+                {
+                    wrappedText.push_back(line.substr(0, lastSpace));
+                    line = line.substr(lastSpace + 1);
+                    currentPos = 0;
+                    lastSpace = std::string::npos;
+                }
+                else
+                {
+                    wrappedText.push_back(line.substr(0, wrapWidth));
+                    line = line.substr(wrapWidth);
+                }
+                lineBreaks.push_back(false);
+            }
+            else
+            {
+                currentPos++;
+            }
         }
         wrappedText.push_back(line);
         lineBreaks.push_back(true);

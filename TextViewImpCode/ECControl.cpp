@@ -1,18 +1,18 @@
 //
-// ECControl.cpp
+// ECController.cpp
 //
 // William Brodhead
 //
 
 #include <iostream>
-#include "ECControl.h"
+#include "ECController.h"
 
 // ************************************************************
 // Control
 
-ECControl :: ECControl(ECModel& model) : model(model) {}
+ECController :: ECController(ECModel& model) : model(model) {}
 
-void ECControl::MoveCursor(int key)
+void ECController::MoveCursor(int key)
 {
     if (key == ARROW_LEFT)
         model.ArrowLeft();
@@ -24,7 +24,7 @@ void ECControl::MoveCursor(int key)
         model.ArrowDown();
 }
 
-void ECControl::InsertChar(int key)
+void ECController::InsertChar(int key)
 {
     if (model.GetCurrentMode() == 1) // confirm in edit mode
     {
@@ -35,7 +35,7 @@ void ECControl::InsertChar(int key)
     }
 }
 
-void ECControl::RemoveChar()
+void ECController::RemoveChar()
 {
     ECCommand *cmd = new ECCommandRemove(model);
     cmd->Execute(); 
@@ -43,7 +43,15 @@ void ECControl::RemoveChar()
     listCmds.push_back(cmd);
 }
 
-void ECControl::Enter()
+void ECController::UnEnter()
+{
+    ECCommand *cmd = new ECCommandUnEnter(model);
+    cmd->Execute();
+    currCmd++;
+    listCmds.push_back(cmd);
+}
+
+void ECController::Enter()
 {
     ECCommand *cmd = new ECCommandEnter(model);
     cmd->Execute();
@@ -51,7 +59,7 @@ void ECControl::Enter()
     listCmds.push_back(cmd);
 }
 
-void ECControl::Undo()
+void ECController::Undo()
 {
     int size = listCmds.size();
     if (currCmd == size)
@@ -64,7 +72,7 @@ void ECControl::Undo()
     currCmd = 0;
 }
 
-void ECControl::Redo()
+void ECController::Redo()
 {
     int size = listCmds.size();
     if (currCmd == 0)
@@ -77,12 +85,12 @@ void ECControl::Redo()
     currCmd = size;
 }
 
-void ECControl::EnterCommandMode()
+void ECController::EnterCommandMode()
 {
     model.SetCommandMode();
 }
 
-void ECControl::EnterEditMode()
+void ECController::EnterEditMode()
 {
     model.SetEditMode();
     listCmds.clear();
@@ -99,20 +107,24 @@ ECMasterObserver :: ECMasterObserver(ECTextViewImp *view, ECModel &model)
 void ECMasterObserver :: Update()
 {
     int key = view->GetPressedKey();
+    int cursorX = view->GetCursorX();
+    int mode = model.GetCurrentMode();
 
     if (key == ARROW_LEFT || key == ARROW_RIGHT || key == ARROW_UP || key == ARROW_DOWN)
         ctrl.MoveCursor(key);       // Handle cursor movement
     else if (key == ESC)
         ctrl.EnterCommandMode();    // Change to command mode
-    else if (model.GetCurrentMode() != 1 && key == 'i')
+    else if (mode != 1 && key == 'i')
         ctrl.EnterEditMode();       // Change to edit mode
-    else if (model.GetCurrentMode() == 0 && key == CTRL_Z)
+    else if (mode == 0 && key == CTRL_Z)
         ctrl.Undo();                // Undo
-    else if (model.GetCurrentMode() == 0 && key == CTRL_Y)
+    else if (mode == 0 && key == CTRL_Y)
         ctrl.Redo();                // Redo
-    else if (model.GetCurrentMode() == 1 && key == ENTER)
+    else if (mode == 1 && key == ENTER)
         ctrl.Enter();               // Enter key
-    else if (model.GetCurrentMode() == 1 && key == BACKSPACE)
+    //else if (model.GetCurrentMode() == 1 && key == BACKSPACE && cursorX == 0)
+    //    ctrl.UnEnter();          // Backspace key (undo enter)
+    else if (mode == 1 && key == BACKSPACE)
         ctrl.RemoveChar();          // Backspace key
     else
         ctrl.InsertChar(key);       // Type text (requires edit mode)

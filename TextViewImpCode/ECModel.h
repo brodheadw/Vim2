@@ -14,6 +14,10 @@
 
 using namespace std;
 
+
+// ************************************************************
+// ECModel Class
+
 class ECModel
 {
 public:

@@ -7,7 +7,7 @@
 #ifndef ECCommand_h
 #define ECCommand_h
 
-#include "ECControl.h"
+#include "ECController.h"
 
 class ECModel;
 
@@ -55,6 +55,16 @@ class ECCommandEnter : public ECCommand
 public:
     ECCommandEnter(ECModel &model);
     virtual ~ECCommandEnter() {}
+
+    virtual void Execute() override;
+    virtual void UnExecute() override;
+};
+
+class ECCommandUnEnter : public ECCommand
+{
+public:
+    ECCommandUnEnter(ECModel &model);
+    virtual ~ECCommandUnEnter() {}
 
     virtual void Execute() override;
     virtual void UnExecute() override;

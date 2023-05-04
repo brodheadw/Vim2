@@ -4,8 +4,8 @@
 // William Brodhead
 //
 
-#ifndef ECControl_h
-#define ECControl_h
+#ifndef ECController_h
+#define ECController_h
 
 #include <iostream>
 #include <fstream>
@@ -21,15 +21,16 @@ const string DEFAULT = "";
 class ECCommand;
 
 // ************************************************************
-// ECControl Class
+// ECController Class
 
-class ECControl
+class ECController
 {
 public:
-    ECControl(ECModel& model);
+    ECController(ECModel& model);
     void MoveCursor(int key);
     void InsertChar(int key);
     void RemoveChar();
+    void UnEnter();
     void Enter();
     
     void Undo();
@@ -56,10 +57,9 @@ public:
 
 private:
     ECTextViewImp *view;
-    ECControl ctrl;
+    ECController ctrl;
     ECModel &model;
 };
-
 
 // stuff from first part here for reference, feel free to ignore
 
