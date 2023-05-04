@@ -9,8 +9,8 @@
 ECCommand::ECCommand(ECModel &model) : model(model) {}
 
 
-ECCommandInsert::ECCommandInsert(ECModel &model, int key) 
-    : ECCommand(model), key(key), cursorX(model.GetCursorX()), cursorY(model.GetCursorY()) {}
+ECCommandInsert::ECCommandInsert(ECModel &model, int key)
+    : ECCommand(model), key(key) {}
 
 void ECCommandInsert::Execute()
 {
@@ -26,14 +26,19 @@ void ECCommandInsert::Execute()
 
 void ECCommandInsert::UnExecute()
 {
-    model.RemoveChar2();
-    cursorX = model.GetCursorX();
-    cursorY = model.GetCursorY();
+    if (key == '\n')
+    {
+        model.RemoveLine();
+    }
+    else
+    {
+        model.RemoveChar();
+    }
 }
 
 
-ECCommandRemove::ECCommandRemove(ECModel &model) 
-    : ECCommand(model), cursorX(model.GetCursorX()), cursorY(model.GetCursorY()) 
+ECCommandRemove::ECCommandRemove(ECModel &model)
+    : ECCommand(model), cursorX(model.GetCursorX()), cursorY(model.GetCursorY())
 {
     key = model.GetCharAt();
 }
@@ -53,6 +58,4 @@ void ECCommandRemove::UnExecute()
     {
         model.InsertChar(key);
     }
-    cursorX = model.GetCursorX();
-    cursorY = model.GetCursorY();
 }

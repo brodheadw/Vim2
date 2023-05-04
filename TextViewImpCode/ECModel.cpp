@@ -125,7 +125,7 @@ void ECModel::InsertChar(int key)
 
         if (cursorX == maxCols)
         {// Move cursor to next line if at EOL
-            view.SetCursorX(0);
+            view.SetCursorX(1);
             view.SetCursorY(cursorY + 1);
         }
         else
@@ -199,38 +199,39 @@ void ECModel::NewLine()
     UpdateView();
 }
 
+void ECModel::RemoveLine()
+{
+    int cursorX = view.GetCursorX();
+    int cursorY = view.GetCursorY();
+
+    if (cursorY > 0)
+    {
+        // Move cursor to beginning of previous line
+        view.SetCursorX(0);
+        view.SetCursorY(cursorY - 1);
+
+        // Merge current line with previous line
+        text[cursorY - 1].append(text[cursorY]);
+        text.erase(text.begin() + cursorY);
+    }
+    else if (cursorY == 0 && text.size() > 1)
+    {
+        // Move cursor to beginning of next line
+        view.SetCursorX(0);
+        view.SetCursorY(cursorY);
+
+        // Merge current line with next line
+        text[cursorY].append(text[cursorY + 1]);
+        text.erase(text.begin() + cursorY + 1);
+    }
+    UpdateView();
+}
+
 void ECModel::UpdateView()
 {
     view.InitRows();
     for (const auto &row : text) view.AddRow(row);
     view.Refresh();
-}
-
-void ECModel::RemoveChar2()
-{
-    int cursorY = view.GetCursorY();
-    int cursorX = view.GetCursorX();
-    int lastRow = view.GetRowNumInView() - 1;
-    int lastCol = view.GetColNumInView() - 1;
-   
-    string currentRow = text[cursorY];
-    if (!currentRow.empty() && cursorX - 1 < currentRow.length()) 
-    {
-        currentRow.erase(cursorX - 1, 1);
-        text[cursorY] = currentRow;
-    }
-
-    view.SetCursorX(mod((view.GetCursorX() - 1), view.GetColNumInView()));
-    if (view.GetCursorX() == view.GetColNumInView() - 1)
-    {
-        if (view.GetCursorY() > 0)
-        {
-            view.SetCursorY((view.GetCursorY() - 1));
-        }
-        int lastValidCol = text[view.GetCursorY()].length();
-        view.SetCursorX(lastValidCol);
-    }
-    UpdateView();
 }
 
 

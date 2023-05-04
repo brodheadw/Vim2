@@ -44,8 +44,7 @@ public:
     void InsertChar(int key);
     void RemoveChar();
     void NewLine();
-    void RemoveChar2();
-    int mod (int a, int b) { return (a % b + b) % b; };
+    void RemoveLine();
 
     void LoadFile(const string& filename);
     void SaveFile(const string& filename);
