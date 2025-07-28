@@ -52,7 +52,7 @@ public:
 private:
     ECTextViewImp& view;
     vector<string> text;
-    const string& filename;
+    string filename;
     int mode, cursorX, cursorY;
 };
 

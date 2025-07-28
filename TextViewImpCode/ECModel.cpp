@@ -10,7 +10,7 @@
 // ECModel functions
 
 ECModel :: ECModel(ECTextViewImp& view, std::vector<std::string> text)  
-    : view(view), text(text), filename(filename), mode(0) {}
+    : view(view), text(text), filename(""), mode(0) {}
 
 int ECModel::GetCharAt()
 {
