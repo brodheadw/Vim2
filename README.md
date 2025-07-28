@@ -40,7 +40,7 @@ The editor has two modes, similar to Vim:
 #### Command Mode (Default)
 - **Navigation**: Use arrow keys to move the cursor
 - **Switch to Edit Mode**: Press `i` to enter insert mode
-- **Quit**: Press `Ctrl+Q` to quit and save
+- **Quit**: Press `q` to quit immediately, or `Ctrl+Q` to quit and save
 
 #### Edit Mode
 - **Insert Text**: Type normally to insert characters at cursor position
@@ -59,6 +59,7 @@ The editor has two modes, similar to Vim:
 | `Arrow Keys` | Navigate cursor |
 | `i` | Enter edit/insert mode |
 | `Escape` | Enter command mode |
+| `q` | Quit immediately (command mode) |
 | `Enter` | New line (edit mode) |
 | `Backspace` | Delete character |
 | `Ctrl+Q` | Quit and save |
