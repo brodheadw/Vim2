@@ -53,7 +53,7 @@ private:
     ECTextViewImp& view;
     vector<string> text;
     string filename;
-    int mode, cursorX, cursorY;
+    int mode;
 };
 
 #endif /* ECModel_h */

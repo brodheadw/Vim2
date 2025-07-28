@@ -259,7 +259,7 @@ void ECTextViewImp :: FinishRowsBuffer()
     const char *row = (filerow >= GetNumRows() ) ? NULL : GetRow(filerow);
     if (row) {
         for (int j = 0; j < status.GetCursorX(); j++) {
-            if (j < strlen(row)  && row[j] == TAB) cx += 7-((cx)%8);
+            if (j < static_cast<int>(strlen(row))  && row[j] == TAB) cx += 7-((cx)%8);
             cx++;
         }
     }

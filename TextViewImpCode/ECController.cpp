@@ -55,7 +55,7 @@ void ECController::Undo()
 
 void ECController::Redo()
 {
-    if (currCmd < listCmds.size())
+    if (currCmd < static_cast<int>(listCmds.size()))
     {
         listCmds[currCmd]->Execute();
         currCmd++;
@@ -87,7 +87,7 @@ void ECController::AddCommand(ECCommand* cmd)
     ClearRedoHistory();
     
     listCmds.push_back(cmd);
-    currCmd = listCmds.size();
+    currCmd = static_cast<int>(listCmds.size());
 }
 
 void ECController::ClearRedoHistory()

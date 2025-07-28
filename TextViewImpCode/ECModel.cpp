@@ -17,7 +17,7 @@ int ECModel::GetCharAt()
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorY < text.size() && cursorX > 0 && cursorX <= int(text[cursorY].length())) 
+    if (cursorY < static_cast<int>(text.size()) && cursorX > 0 && cursorX <= static_cast<int>(text[cursorY].length())) 
     {
         return text[cursorY][cursorX - 1];
     } 
@@ -48,11 +48,11 @@ void ECModel::ArrowRight()  // RIGHT
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorX < text[cursorY].length())
+    if (cursorX < static_cast<int>(text[cursorY].length()))
     {
         view.SetCursorX(cursorX + 1);
     }
-    else if (cursorY < text.size() - 1)
+    else if (cursorY < static_cast<int>(text.size()) - 1)
     {
         view.SetCursorY(cursorY + 1);
         view.SetCursorX(0);
@@ -67,7 +67,7 @@ void ECModel::ArrowUp()     // UP
     if (cursorY > 0)
     {
         view.SetCursorY(cursorY - 1);
-        if (cursorX > text[cursorY - 1].length())
+        if (cursorX > static_cast<int>(text[cursorY - 1].length()))
         {
             view.SetCursorX(text[cursorY - 1].length());
         }
@@ -79,10 +79,10 @@ void ECModel::ArrowDown()   // DOWN
     int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
-    if (cursorY < text.size() - 1)
+    if (cursorY < static_cast<int>(text.size()) - 1)
     {
         view.SetCursorY(cursorY + 1);
-        if (cursorY + 1 < text.size() && cursorX >= text[cursorY + 1].length())
+        if (cursorY + 1 < static_cast<int>(text.size()) && cursorX >= static_cast<int>(text[cursorY + 1].length()))
         {
             view.SetCursorX(text[cursorY + 1].length());
         }
@@ -102,19 +102,19 @@ void ECModel::InsertChar(int key)
     int cursorY = view.GetCursorY();
     int maxCols = view.GetColNumInView() - 1;
     // Resize text if row doesn't exist
-    if (cursorY >= text.size()) text.resize(cursorY + 1);
+    if (cursorY >= static_cast<int>(text.size())) text.resize(cursorY + 1);
     // Get current line
     string& currentLine = text[cursorY];
     // Insert character at cursor pos
     currentLine.insert(cursorX, 1, (char)(key));
 
-    if (currentLine.length() > maxCols)
+    if (static_cast<int>(currentLine.length()) > maxCols)
     {// Move the exceeding part of current line to next line
         string wrappedChar = currentLine.substr(maxCols);
         currentLine.erase(maxCols);
 
         // Check if there is a next line
-        if (cursorY + 1 < text.size())
+        if (cursorY + 1 < static_cast<int>(text.size()))
         {// Insert wrappedChar at the beginning of next line
             text[cursorY + 1] = wrappedChar + text[cursorY + 1];
         }
@@ -153,7 +153,7 @@ void ECModel::RemoveChar()
     }
     else if (cursorY > 0)
     {// Move the first character of the current line to the previous line if it's shorter than maxCols
-        if (text[cursorY - 1].length() < maxCols && text[cursorY].length() > 0)
+        if (static_cast<int>(text[cursorY - 1].length()) < maxCols && text[cursorY].length() > 0)
         {
             string wrappedChar = text[cursorY].substr(0, 1);
             text[cursorY].erase(0, 1);
@@ -184,7 +184,7 @@ void ECModel::NewLine()
     int cursorY = view.GetCursorY();
 
     // Append new line if cursor at end of text
-    if (cursorY >= text.size()) text.push_back("");
+    if (cursorY >= static_cast<int>(text.size())) text.push_back("");
 
     // Split current line at cursor pos
     string newLine = text[cursorY].substr(cursorX);
@@ -201,7 +201,6 @@ void ECModel::NewLine()
 
 void ECModel::RemoveLine()
 {
-    int cursorX = view.GetCursorX();
     int cursorY = view.GetCursorY();
 
     if (cursorY > 0)
