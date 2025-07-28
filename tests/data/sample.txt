@@ -1,0 +1,11 @@
+Hello World
+This is a sample file
+With multiple lines
+For testing purposes
+
+Line with spaces    
+	Line with tab
+Mixed	spaces and	tabs
+
+Empty line above
+Final line
