@@ -50,7 +50,6 @@ void ECController::Undo()
     {
         currCmd--;
         listCmds[currCmd]->UnExecute();
-        model.UpdateView();
     }
 }
 
@@ -60,7 +59,6 @@ void ECController::Redo()
     {
         listCmds[currCmd]->Execute();
         currCmd++;
-        model.UpdateView();
     }
 }
 
@@ -122,6 +120,8 @@ void ECMasterObserver :: Update()
         ctrl.EnterCommandMode();    // Change to command mode
     else if (mode != 1 && key == 'i')
         ctrl.EnterEditMode();       // Change to edit mode
+    else if (mode == 0 && key == 'q')
+        view->Quit();               // Quit editor (command mode only)
     else if (key == CTRL_Z)
         ctrl.Undo();                // Undo (works in both modes)
     else if (key == CTRL_Y)

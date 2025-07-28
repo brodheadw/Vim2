@@ -243,7 +243,6 @@ void ECModel::LoadFile(const string& filename)
 
     // Clear current text buffer
     text.clear();
-    text.push_back("");
 
     // Read file line by line
     string line;
@@ -251,6 +250,13 @@ void ECModel::LoadFile(const string& filename)
     {
         text.push_back(line);
     }
+    
+    // If file is empty or doesn't exist, start with one empty line
+    if (text.empty())
+    {
+        text.push_back("");
+    }
+    
     file.close();
     UpdateView();
 }

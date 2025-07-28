@@ -12,11 +12,14 @@ int main(int argc, char *argv[])
     if (argc < 2)
     {
         ECTextViewImp wndTest;
-        wndTest.AddRow("Press ctrl-q to quit");
         
-        ECModel model(wndTest, {});
+        ECModel model(wndTest, {""});
         ECMasterObserver MasterObserver(&wndTest, model);
         wndTest.Attach(&MasterObserver);
+        
+        // Add status row instead of making it part of the document
+        wndTest.AddStatusRow("Press ctrl-q to quit", "", false);
+        model.UpdateView();
         
         wndTest.Show();
         return 0;
