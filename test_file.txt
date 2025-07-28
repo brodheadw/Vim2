@@ -1,0 +1,3 @@
+Hello World!
+This is a test file for the vim editor.
+Let's see if we can edit this text.
