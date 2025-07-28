@@ -50,12 +50,18 @@ void ECCommandRemove::Execute()
 
 void ECCommandRemove::UnExecute()
 {
+    // Restore cursor position first
+    model.SetCursorX(cursorX);
+    model.SetCursorY(cursorY);
+    
     if (cursorX == 0)
     {
+        // This was a backspace at beginning of line (merged with previous line)
         model.NewLine();
     }
     else
     {
+        // This was a regular character deletion
         model.InsertChar(key);
     }
 }

@@ -25,6 +25,7 @@ class ECController
 {
 public:
     ECController(ECModel& model);
+    ~ECController();
     void MoveCursor(int key);
     void InsertChar(int key);
     void RemoveChar();
@@ -36,6 +37,9 @@ public:
     void EnterEditMode();
 
 private:
+    void AddCommand(ECCommand* cmd);
+    void ClearRedoHistory();
+    
     ECModel& model;
     vector<ECCommand *> listCmds;
     int currCmd;

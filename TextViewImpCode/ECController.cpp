@@ -29,42 +29,39 @@ void ECController::InsertChar(int key)
     if (model.GetCurrentMode() == 1) // confirm in edit mode
     {
         ECCommand *cmd = new ECCommandInsert(model, key);
-        listCmds.push_back(cmd);
+        AddCommand(cmd);
         cmd->Execute();
-        currCmd++;
     }
 }
 
 void ECController::RemoveChar()
 {
-    ECCommand *cmd = new ECCommandRemove(model);
-    listCmds.push_back(cmd);
-    cmd->Execute(); 
-    currCmd++;
+    if (model.GetCurrentMode() == 1) // only in edit mode
+    {
+        ECCommand *cmd = new ECCommandRemove(model);
+        AddCommand(cmd);
+        cmd->Execute();
+    }
 }
 
 void ECController::Undo()
 {
-    if (currCmd == listCmds.size())
+    if (currCmd > 0)
     {
-        for (int i = listCmds.size() - 1; i >= 0; i--)
-        {
-            listCmds[i]->UnExecute();
-        }
+        currCmd--;
+        listCmds[currCmd]->UnExecute();
+        model.UpdateView();
     }
-    currCmd = 0;
 }
 
 void ECController::Redo()
 {
-    if (currCmd == 0)
+    if (currCmd < listCmds.size())
     {
-        for (int i = 0; i < listCmds.size(); i++)
-        {
-            listCmds[i]->Execute();
-        }
+        listCmds[currCmd]->Execute();
+        currCmd++;
+        model.UpdateView();
     }
-    currCmd = listCmds.size();
 }
 
 void ECController::EnterCommandMode()
@@ -75,8 +72,34 @@ void ECController::EnterCommandMode()
 void ECController::EnterEditMode()
 {
     model.SetEditMode();
+}
+
+ECController::~ECController()
+{
+    for (ECCommand* cmd : listCmds)
+    {
+        delete cmd;
+    }
     listCmds.clear();
-    currCmd = 0;
+}
+
+void ECController::AddCommand(ECCommand* cmd)
+{
+    // Clear any redo history when adding a new command
+    ClearRedoHistory();
+    
+    listCmds.push_back(cmd);
+    currCmd = listCmds.size();
+}
+
+void ECController::ClearRedoHistory()
+{
+    // Delete any commands beyond currCmd (redo history)
+    for (size_t i = currCmd; i < listCmds.size(); i++)
+    {
+        delete listCmds[i];
+    }
+    listCmds.erase(listCmds.begin() + currCmd, listCmds.end());
 }
 
 
@@ -99,14 +122,14 @@ void ECMasterObserver :: Update()
         ctrl.EnterCommandMode();    // Change to command mode
     else if (mode != 1 && key == 'i')
         ctrl.EnterEditMode();       // Change to edit mode
-    else if (mode == 0 && key == CTRL_Z)
-        ctrl.Undo();                // Undo
-    else if (mode == 0 && key == CTRL_Y)
-        ctrl.Redo();                // Redo
+    else if (key == CTRL_Z)
+        ctrl.Undo();                // Undo (works in both modes)
+    else if (key == CTRL_Y)
+        ctrl.Redo();                // Redo (works in both modes)
     else if (mode == 1 && key == ENTER)
         ctrl.InsertChar('\n');      // Enter key
     else if (mode == 1 && key == BACKSPACE)
         ctrl.RemoveChar();          // Backspace key
-    else
-        ctrl.InsertChar(key);       // Type text (requires edit mode)
+    else if (mode == 1)
+        ctrl.InsertChar(key);       // Type text (only in edit mode)
 }
